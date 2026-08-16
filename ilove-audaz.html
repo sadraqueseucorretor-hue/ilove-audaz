@@ -712,11 +712,13 @@
           <button type="button" class="doc-tab active" data-doc="parentesco">Parentesco</button>
           <button type="button" class="doc-tab" data-doc="cancelamento">Cancelamento</button>
           <button type="button" class="doc-tab" data-doc="autorizacao">Autorização CAIXA</button>
+          <button type="button" class="doc-tab" data-doc="renda">Levantamento de Renda</button>
         </nav>
         <select id="docModel" style="position:absolute; opacity:0; pointer-events:none; width:1px; height:1px;" aria-hidden="true" tabindex="-1">
           <option value="parentesco">Declaração de Parentesco, Residência e Ausência de Renda</option>
           <option value="cancelamento">Carta de Cancelamento (CCA)</option>
           <option value="autorizacao">Autorização de Pesquisa Cadastral (CAIXA)</option>
+          <option value="renda">Levantamento de Renda Informal</option>
         </select>
   <div class="layout" id="layoutDeclaracoes">
 
@@ -830,6 +832,70 @@
           <div class="field">
             <label for="mcCpf">CPF</label>
             <input type="text" id="mcCpf" placeholder="000.000.000-00" maxlength="14">
+          </div>
+        </fieldset>
+      </div>
+
+      <div id="fieldsRendaInformal" style="display:none;">
+        <fieldset>
+          <legend><span class="num">1</span> Dados do declarante</legend>
+          <div class="field">
+            <label for="riNome">Nome completo</label>
+            <input type="text" id="riNome" placeholder="Nome completo do declarante">
+          </div>
+          <div class="field">
+            <label for="riCpf">CPF</label>
+            <input type="text" id="riCpf" placeholder="000.000.000-00" maxlength="14">
+          </div>
+          <div class="field">
+            <label for="riFuncao">Função / Atividade</label>
+            <input type="text" id="riFuncao" placeholder="Ex.: autônomo, diarista, vendedor(a)...">
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="num">2</span> Conta bancária</legend>
+          <div class="field">
+            <label for="riBanco">Banco</label>
+            <input type="text" id="riBanco" placeholder="Nome do banco">
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="riAgencia">Agência</label>
+              <input type="text" id="riAgencia" placeholder="0000">
+            </div>
+            <div class="field">
+              <label for="riConta">Conta</label>
+              <input type="text" id="riConta" placeholder="00000-0">
+            </div>
+          </div>
+          <div class="field">
+            <label>Tipo de conta</label>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+              <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3a362e; font-weight:500;">
+                <input type="radio" name="riTipoConta" id="riTipoCorrente" value="Conta Corrente" checked style="accent-color:var(--gold-deep);"> Conta Corrente
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3a362e; font-weight:500;">
+                <input type="radio" name="riTipoConta" id="riTipoPoupanca" value="Conta Poupança" style="accent-color:var(--gold-deep);"> Conta Poupança
+              </label>
+              <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3a362e; font-weight:500;">
+                <input type="radio" name="riTipoConta" id="riTipoOutraRadio" value="Outra" style="accent-color:var(--gold-deep);"> Outra:
+                <input type="text" id="riTipoOutra" placeholder="especifique" style="flex:1; border:1px solid var(--line-strong); border-radius:6px; padding:6px 8px; font-size:12.5px;">
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="num">3</span> Movimentação diária (últimos 6 meses)</legend>
+          <div style="font-size:11.5px;color:#a29c8c;margin-bottom:10px;">Preencha os valores de cada dia, por mês. Os totais são calculados automaticamente.</div>
+          <div id="riGridHost" style="overflow-x:auto; margin:0 -8px;"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="num">4</span> Observações</legend>
+          <div class="field">
+            <textarea id="riObs" rows="3" placeholder="Observações adicionais (opcional)" style="width:100%; border:1px solid var(--line-strong); border-radius:8px; padding:10px 12px; font-size:14px; font-family:'Inter',sans-serif; color:var(--ink); resize:vertical;"></textarea>
           </div>
         </fieldset>
       </div>
@@ -1044,6 +1110,59 @@
               </div>
             </div>
           </div>
+
+          <div id="previewRendaInformal" style="display:none; font-family:'Inter',sans-serif; color:#111; text-align:left; font-size:11.5px; line-height:1.4;">
+            <div style="text-align:center; margin-bottom:14px;">
+              <div style="font-family:'Fraunces',serif; font-weight:700; font-size:19px; color:var(--navy); letter-spacing:0.02em;">LEVANTAMENTO DE RENDA INFORMAL</div>
+              <div style="font-size:12px; color:#5c584e; margin-top:3px; text-transform:uppercase; letter-spacing:0.03em;">Movimentação bancária - referente aos últimos 6 meses</div>
+            </div>
+
+            <div style="background:var(--navy); color:#fff; font-weight:700; font-size:11px; letter-spacing:0.04em; padding:6px 10px; text-transform:uppercase;">Dados do declarante</div>
+            <table style="width:100%; border-collapse:collapse; margin-bottom:14px;">
+              <tr>
+                <td style="border:1px solid #ccc; padding:6px 10px; width:70%;"><b>Nome completo:</b> <span id="out-riNome" class="blank empty">_______________________</span></td>
+                <td style="border:1px solid #ccc; padding:6px 10px;"><b>CPF:</b> <span id="out-riCpf" class="blank empty">______________</span></td>
+              </tr>
+              <tr>
+                <td colspan="2" style="border:1px solid #ccc; padding:6px 10px;"><b>Função / Atividade:</b> <span id="out-riFuncao" class="blank empty">______________</span></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid #ccc; padding:6px 10px;" colspan="2">
+                  <b>Banco:</b> <span id="out-riBanco" class="blank empty">______________</span>
+                  &nbsp;&nbsp;<b>Agência:</b> <span id="out-riAgencia" class="blank empty">______</span>
+                  &nbsp;&nbsp;<b>Conta:</b> <span id="out-riConta" class="blank empty">______</span>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" style="border:1px solid #ccc; padding:6px 10px;"><b>Tipo de conta:</b> <span id="out-riTipo">Conta Corrente</span></td>
+              </tr>
+              <tr>
+                <td colspan="2" style="border:1px solid #ccc; padding:6px 10px;"><b>Período considerado:</b> dos últimos 6 meses</td>
+              </tr>
+            </table>
+
+            <div id="riPreviewGridHost" style="overflow-x:auto;"></div>
+
+            <table style="width:100%; border-collapse:collapse; margin:12px 0;">
+              <tr>
+                <td style="border:1px solid #ccc; background:var(--paper-dim); padding:8px 10px; font-weight:700; width:45%;">TOTAL GERAL DOS 6 MESES (R$):</td>
+                <td style="border:1px solid #ccc; padding:8px 10px; font-weight:700;" id="out-riTotalGeral">R$ 0,00</td>
+              </tr>
+            </table>
+
+            <div style="border:1px solid #ccc; padding:8px 10px; min-height:44px; margin-bottom:16px;">
+              <b style="display:block; margin-bottom:4px;">Observações:</b>
+              <span id="out-riObs" style="white-space:pre-wrap; color:#5c584e;"></span>
+            </div>
+
+            <div style="text-align:right; font-size:12px;">
+              <b>Local e data:</b>
+              <span id="out-riCidade" class="blank empty">Fortaleza/CE</span>,
+              <span id="out-riDia" class="blank empty">___</span> de
+              <span id="out-riMes" class="blank empty">__________</span> de
+              <span id="out-riAno" class="blank empty">____</span>.
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1194,6 +1313,7 @@
 const fieldsParentesco = ['pNome','pCpf','pEstadoCivil','pGrau','tNome','tCpf','endereco','cidadeAss','dataAss'];
 const fieldsCancelamento = ['ccNome','ccCpf','cidadeAss','dataAss'];
 const fieldsAutorizacao = ['mpNome','mpCpf','cidadeAss','dataAss'];
+const fieldsRendaInformal = ['riNome','riCpf','riFuncao','riBanco','riAgencia','riConta','cidadeAss','dataAss'];
 const fields = fieldsParentesco;
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 
@@ -1204,12 +1324,14 @@ const FIELD_LABELS = {
   cNome:'Nome do cônjuge',
   ccNome:'Nome do solicitante', ccCpf:'CPF do solicitante',
   mpNome:'Nome do proponente', mpCpf:'CPF do proponente',
-  mcNome:'Nome do cônjuge', mcCpf:'CPF do cônjuge'
+  mcNome:'Nome do cônjuge', mcCpf:'CPF do cônjuge',
+  riNome:'Nome do declarante', riCpf:'CPF do declarante', riFuncao:'Função/Atividade',
+  riBanco:'Banco', riAgencia:'Agência', riConta:'Conta'
 };
 
 function getRequiredFieldsForActiveDoc(){
   const docModel = document.getElementById('docModel').value;
-  const map = { parentesco: fieldsParentesco, cancelamento: fieldsCancelamento, autorizacao: fieldsAutorizacao };
+  const map = { parentesco: fieldsParentesco, cancelamento: fieldsCancelamento, autorizacao: fieldsAutorizacao, renda: fieldsRendaInformal };
   const required = (map[docModel] || fieldsParentesco).slice();
   if(docModel === 'parentesco' && document.getElementById('conjuge').checked){
     required.push('cNome');
@@ -1249,6 +1371,7 @@ document.getElementById('tCpf').addEventListener('input', e=>{ e.target.value = 
 document.getElementById('ccCpf').addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); render(); });
 document.getElementById('mpCpf').addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); render(); });
 document.getElementById('mcCpf').addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); render(); });
+document.getElementById('riCpf').addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); render(); });
 
 function setOut(id, value, fallback){
   const el = document.getElementById(id);
@@ -1328,9 +1451,31 @@ function render(){
     setOut('out-maAno', '', '____');
   }
 
+  setOut('out-riNome', v('riNome'), '_______________________');
+  setOut('out-riCpf', v('riCpf'), '______________');
+  setOut('out-riFuncao', v('riFuncao'), '______________');
+  setOut('out-riBanco', v('riBanco'), '______________');
+  setOut('out-riAgencia', v('riAgencia'), '______');
+  setOut('out-riConta', v('riConta'), '______');
+  const riTipoSel = document.querySelector('input[name="riTipoConta"]:checked');
+  const riTipoLabel = riTipoSel && riTipoSel.value === 'Outra' ? (v('riTipoOutra').trim() || 'Outra') : (riTipoSel ? riTipoSel.value : 'Conta Corrente');
+  document.getElementById('out-riTipo').textContent = riTipoLabel;
+  document.getElementById('out-riObs').textContent = v('riObs');
+  setOut('out-riCidade', v('cidadeAss'), '_______________');
+  if(dataStr){
+    const [y,m,d] = dataStr.split('-');
+    setOut('out-riDia', String(parseInt(d,10)), '___');
+    setOut('out-riMes', MESES[parseInt(m,10)-1], '__________');
+    setOut('out-riAno', y, '____');
+  } else {
+    setOut('out-riDia', '', '___');
+    setOut('out-riMes', '', '__________');
+    setOut('out-riAno', '', '____');
+  }
+
   // completeness
   const docModel = document.getElementById('docModel').value;
-  const baseFieldsMap = { cancelamento: fieldsCancelamento, autorizacao: fieldsAutorizacao, parentesco: fieldsParentesco };
+  const baseFieldsMap = { cancelamento: fieldsCancelamento, autorizacao: fieldsAutorizacao, parentesco: fieldsParentesco, renda: fieldsRendaInformal };
   const baseFields = baseFieldsMap[docModel] || fieldsParentesco;
   let activeFields = baseFields;
   if(docModel === 'parentesco' && temConjuge) activeFields = baseFields.concat(['cNome']);
@@ -1350,11 +1495,16 @@ document.getElementById('mpNome').addEventListener('input', render);
 document.getElementById('mcNome').addEventListener('input', render);
 document.getElementById('conjuge').addEventListener('change', render);
 document.getElementById('mConjuge').addEventListener('change', render);
+['riNome','riFuncao','riBanco','riAgencia','riConta','riTipoOutra','riObs'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', render);
+});
+document.querySelectorAll('input[name="riTipoConta"]').forEach(r=> r.addEventListener('change', render));
 
 const DOC_META = {
   parentesco: { fieldsetsId:'fieldsParentesco', previewId:'previewParentesco', dataNum:'5', btnLabel:'↓ Emitir Declaração (PDF)' },
   cancelamento: { fieldsetsId:'fieldsCancelamento', previewId:'previewCancelamento', dataNum:'2', btnLabel:'↓ Emitir Carta (PDF)' },
-  autorizacao: { fieldsetsId:'fieldsAutorizacao', previewId:'previewAutorizacao', dataNum:'3', btnLabel:'↓ Emitir Autorização (PDF)' }
+  autorizacao: { fieldsetsId:'fieldsAutorizacao', previewId:'previewAutorizacao', dataNum:'3', btnLabel:'↓ Emitir Autorização (PDF)' },
+  renda: { fieldsetsId:'fieldsRendaInformal', previewId:'previewRendaInformal', dataNum:'5', btnLabel:'↓ Emitir Levantamento (PDF)' }
 };
 
 function switchDoc(){
@@ -1398,6 +1548,12 @@ document.getElementById('btnClear').addEventListener('click', ()=>{
   document.getElementById('mpCpf').value = '';
   document.getElementById('mcNome').value = '';
   document.getElementById('mcCpf').value = '';
+  ['riNome','riCpf','riFuncao','riBanco','riAgencia','riConta','riTipoOutra','riObs'].forEach(id=>{
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('riTipoCorrente').checked = true;
+  document.querySelectorAll('.ri-cell').forEach(el=> el.value = '');
+  updateRendaGrid();
   document.getElementById('cidadeAss').value = 'Fortaleza/CE';
   document.getElementById('dataAss').value = hojeISO();
   document.getElementById('conjuge').checked = false;
@@ -1484,6 +1640,11 @@ document.getElementById('btnPdf').addEventListener('click', async ()=>{
       const nome = nomeCliente.replace(/\s+/g,'_') || 'autorizacao';
       pdf.save(`autorizacao_pesquisa_cadastral_${nome}.pdf`);
       if(window.logHistory) window.logHistory('doc:autorizacao', nomeCliente ? 'Cliente: '+nomeCliente : '');
+    } else if(docModel === 'renda'){
+      const nomeCliente = document.getElementById('riNome').value.trim();
+      const nome = nomeCliente.replace(/\s+/g,'_') || 'levantamento';
+      pdf.save(`levantamento_renda_${nome}.pdf`);
+      if(window.logHistory) window.logHistory('doc:renda', nomeCliente ? 'Cliente: '+nomeCliente : '');
     } else {
       const nomeCliente = document.getElementById('pNome').value.trim();
       const nome = nomeCliente.replace(/\s+/g,'_') || 'declaracao';
@@ -1504,6 +1665,87 @@ const sheetWrap = document.getElementById('sheetWrap');
 document.getElementById('zoomIn').addEventListener('click', ()=>{ zoom = Math.min(1.3, zoom+0.1); sheetWrap.style.transform = `scale(${zoom})`; });
 document.getElementById('zoomOut').addEventListener('click', ()=>{ zoom = Math.max(0.6, zoom-0.1); sheetWrap.style.transform = `scale(${zoom})`; });
 
+function parseRendaValue(str){
+  if(!str) return 0;
+  let cleaned = String(str).trim().replace(/[^\d.,-]/g,'');
+  if(cleaned.includes(',')){
+    cleaned = cleaned.replace(/\./g,'').replace(',', '.');
+  }
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? 0 : n;
+}
+function formatBRL(n){
+  return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function buildRendaGrid(){
+  const formHost = document.getElementById('riGridHost');
+  const previewHost = document.getElementById('riPreviewGridHost');
+  if(!formHost || !previewHost) return;
+
+  let formHtml = '<table style="border-collapse:collapse; font-size:11px;"><thead><tr>';
+  formHtml += '<th style="padding:4px 3px; text-align:center; color:#5c584e; font-size:10px;">DIA</th>';
+  for(let m=1;m<=6;m++) formHtml += `<th style="padding:4px 3px; text-align:center; color:#5c584e; font-size:10px;">MÊS ${m}</th>`;
+  formHtml += '</tr></thead><tbody>';
+  for(let d=1; d<=31; d++){
+    formHtml += `<tr><td style="text-align:center; font-size:10.5px; color:#8a8578; padding:2px 4px;">${d}</td>`;
+    for(let m=1;m<=6;m++){
+      formHtml += `<td style="padding:1px;"><input type="text" inputmode="decimal" data-day="${d}" data-month="${m}" class="ri-cell" style="width:54px; border:1px solid var(--line-strong); border-radius:4px; padding:4px 3px; font-size:11px; text-align:right;"></td>`;
+    }
+    formHtml += '</tr>';
+  }
+  formHtml += '<tr>';
+  formHtml += '<td style="text-align:center; font-size:10px; font-weight:700; color:var(--ink); padding:5px 2px;">TOTAL</td>';
+  for(let m=1;m<=6;m++) formHtml += `<td style="text-align:center; font-size:10px; font-weight:700; color:var(--ink); padding:5px 2px;" id="riFormTotal_${m}">R$ 0,00</td>`;
+  formHtml += '</tr></tbody></table>';
+  formHost.innerHTML = formHtml;
+
+  let pvHtml = '<table style="width:100%; border-collapse:collapse; font-size:10.5px;"><thead><tr>';
+  pvHtml += '<th style="background:var(--navy); color:#fff; padding:5px 4px; border:1px solid #0a1330;">DIA</th>';
+  for(let m=1;m<=6;m++) pvHtml += `<th style="background:var(--navy); color:#fff; padding:5px 4px; border:1px solid #0a1330;">MÊS ${m}</th>`;
+  pvHtml += '</tr></thead><tbody>';
+  for(let d=1; d<=31; d++){
+    const shade = d % 2 === 0 ? ' style="background:var(--paper-dim);"' : '';
+    pvHtml += `<tr${shade}><td style="border:1px solid #ccc; text-align:center; padding:3px 4px; font-weight:600;">${d}</td>`;
+    for(let m=1;m<=6;m++){
+      pvHtml += `<td style="border:1px solid #ccc; text-align:right; padding:3px 6px;" id="out-ri-${d}-${m}">&nbsp;</td>`;
+    }
+    pvHtml += '</tr>';
+  }
+  pvHtml += '<tr>';
+  pvHtml += '<td style="border:1px solid #ccc; background:var(--paper-dim); text-align:center; padding:5px 4px; font-weight:700;">TOTAL</td>';
+  for(let m=1;m<=6;m++) pvHtml += `<td style="border:1px solid #ccc; background:var(--paper-dim); text-align:right; padding:5px 6px; font-weight:700;" id="out-riTotal_${m}">R$ 0,00</td>`;
+  pvHtml += '</tr></tbody></table>';
+  previewHost.innerHTML = pvHtml;
+
+  formHost.querySelectorAll('.ri-cell').forEach(inp=>{
+    inp.addEventListener('input', updateRendaGrid);
+  });
+  updateRendaGrid();
+}
+
+function updateRendaGrid(){
+  let grandTotal = 0;
+  for(let m=1;m<=6;m++){
+    let monthTotal = 0;
+    for(let d=1; d<=31; d++){
+      const inp = document.querySelector(`.ri-cell[data-day="${d}"][data-month="${m}"]`);
+      const val = parseRendaValue(inp ? inp.value : '');
+      monthTotal += val;
+      const outCell = document.getElementById(`out-ri-${d}-${m}`);
+      if(outCell) outCell.innerHTML = val > 0 ? formatBRL(val) : '&nbsp;';
+    }
+    grandTotal += monthTotal;
+    const formTotalEl = document.getElementById('riFormTotal_'+m);
+    const outTotalEl = document.getElementById('out-riTotal_'+m);
+    if(formTotalEl) formTotalEl.textContent = formatBRL(monthTotal);
+    if(outTotalEl) outTotalEl.textContent = formatBRL(monthTotal);
+  }
+  const grandEl = document.getElementById('out-riTotalGeral');
+  if(grandEl) grandEl.textContent = formatBRL(grandTotal);
+}
+
+buildRendaGrid();
 document.getElementById('dataAss').value = hojeISO();
 render();
 </script>
@@ -2542,6 +2784,7 @@ render();
     'doc:parentesco':    { kind:'doc', target:'parentesco', label:'Parentesco',            sub:'Declaração de Dependente',      icon:'people' },
     'doc:autorizacao':   { kind:'doc', target:'autorizacao',label:'Autorização CAIXA',      sub:'M.O.',                          icon:'caixa' },
     'doc:cancelamento':  { kind:'doc', target:'cancelamento',label:'Cancelamento',          sub:'Carta de Cancelamento',         icon:'cancel' },
+    'doc:renda':         { kind:'doc', target:'renda',       label:'Levantamento de Renda', sub:'Renda informal (6 meses)',      icon:'cash' },
     'tool:merge':        { kind:'tool', target:'merge',    label:'Juntar PDF',              sub:'Una vários arquivos em um único PDF', icon:'merge' },
     'tool:split':        { kind:'tool', target:'split',    label:'Dividir PDF',             sub:'Separe páginas ou intervalos',  icon:'split' },
     'tool:compress':     { kind:'tool', target:'compress', label:'Comprimir PDF',           sub:'Reduza o tamanho do arquivo',   icon:'compress' },
