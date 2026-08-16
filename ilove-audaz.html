@@ -1320,7 +1320,7 @@
               </div>
             </div>
 
-            <div style="background:var(--navy); color:#fff; font-weight:700; font-size:12px; letter-spacing:0.14em; padding:8px 14px; text-transform:uppercase; margin:18px 0 12px;">Dados pessoais</div>
+            <div class="ficha-sec" style="background:var(--navy); color:#fff; font-weight:700; font-size:12px; letter-spacing:0.14em; padding:8px 14px; text-transform:uppercase; margin:18px 0 12px;">Dados pessoais</div>
 
             <div style="display:flex; gap:10px; margin-bottom:10px;">
               <div style="flex:2;"><div style="font-weight:700; font-size:10.5px; letter-spacing:0.03em; text-transform:uppercase; color:#1a2a4a;">Nome completo:</div><div style="background:#eef2fa; border-bottom:1px solid #b9c6dd; padding:5px 8px; min-height:22px; margin-top:3px;" id="out-fiNome">&nbsp;</div></div>
@@ -1340,7 +1340,7 @@
               </div>
             </div>
 
-            <div style="background:var(--navy); color:#fff; font-weight:700; font-size:12px; letter-spacing:0.14em; padding:8px 14px; text-transform:uppercase; margin:18px 0 12px;">Informações de renda</div>
+            <div class="ficha-sec" style="background:var(--navy); color:#fff; font-weight:700; font-size:12px; letter-spacing:0.14em; padding:8px 14px; text-transform:uppercase; margin:18px 0 12px;">Informações de renda</div>
 
             <div style="margin-bottom:10px;"><div style="font-weight:700; font-size:10.5px; letter-spacing:0.03em; text-transform:uppercase; color:#1a2a4a;">Atividade exercida:</div><div style="background:#eef2fa; border-bottom:1px solid #b9c6dd; padding:5px 8px; min-height:22px; margin-top:3px;" id="out-fiAtividade">&nbsp;</div></div>
 
@@ -1387,21 +1387,19 @@
 
 
             <div id="out-fiInstaSection" style="display:none;">
-              <div style="background:var(--navy); color:#fff; font-weight:700; font-size:12px; letter-spacing:0.14em; padding:8px 14px; text-transform:uppercase; margin:18px 0 12px;">Instagram profissional</div>
-              <div style="display:flex; gap:14px; align-items:flex-start;">
-                <div style="flex:1;">
-                  <div style="font-weight:700; font-size:10.5px; letter-spacing:0.03em; text-transform:uppercase; color:#1a2a4a;">Perfil do cliente:</div>
-                  <div style="background:#eef2fa; border-bottom:1px solid #b9c6dd; padding:5px 8px; min-height:22px; margin-top:3px;" id="out-fiInstaUser">&nbsp;</div>
-                  <div style="font-size:10px; color:#5c584e; margin-top:8px; line-height:1.5;">Print da tela do perfil anexado como comprovação da atividade declarada.</div>
-                </div>
-                <div style="flex:0 0 auto;">
-                  <img id="out-fiInstaImg" alt="" style="display:none; max-width:190px; max-height:250px; border:1px solid #b9c6dd; border-radius:4px;">
-                  <div id="out-fiInstaNoImg" style="width:130px; height:90px; border:1px dashed #b9c6dd; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:9.5px; color:#8a9ab5; text-align:center; padding:6px;">Print não anexado</div>
-                </div>
+              <div class="ficha-sec" style="background:var(--navy); color:#fff; font-weight:700; font-size:12px; letter-spacing:0.14em; padding:8px 14px; text-transform:uppercase; margin:18px 0 12px;">Instagram profissional</div>
+              <div style="margin-bottom:10px;">
+                <div style="font-weight:700; font-size:10.5px; letter-spacing:0.03em; text-transform:uppercase; color:#1a2a4a;">Perfil do cliente:</div>
+                <div style="background:#eef2fa; border-bottom:1px solid #b9c6dd; padding:5px 8px; min-height:22px; margin-top:3px;" id="out-fiInstaUser">&nbsp;</div>
+                <div style="font-size:10px; color:#5c584e; margin-top:6px; line-height:1.5;">Print da tela do perfil anexado como comprovação da atividade declarada.</div>
+              </div>
+              <div style="text-align:center; margin-top:12px;">
+                <img id="out-fiInstaImg" alt="" style="display:none; max-width:100%; max-height:620px; border:1px solid #b9c6dd; border-radius:4px;">
+                <div id="out-fiInstaNoImg" style="width:160px; height:100px; margin:0 auto; border:1px dashed #b9c6dd; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:9.5px; color:#8a9ab5; text-align:center; padding:6px;">Print não anexado</div>
               </div>
             </div>
 
-            <div style="background:var(--navy); color:#fff; font-weight:700; font-size:12px; letter-spacing:0.14em; padding:8px 14px; text-transform:uppercase; margin:18px 0 12px;">Declaração de renda informal:</div>
+            <div class="ficha-sec" style="background:var(--navy); color:#fff; font-weight:700; font-size:12px; letter-spacing:0.14em; padding:8px 14px; text-transform:uppercase; margin:18px 0 12px;">Declaração de renda informal:</div>
 
             <p style="font-style:italic; text-align:center; font-size:11.5px; line-height:1.7; margin:0 26px 26px; color:#1a1a1a;">
               Declaro, sob as penas da lei, que as informações aqui prestadas são verdadeiras e correspondem à minha real condição financeira. Estou ciente de que esta declaração será utilizada para fins de análise de crédito habitacional junto à Caixa Econômica Federal.
@@ -1783,7 +1781,7 @@ function loadInstaScreenshot(file){
     const img = new Image();
     img.onload = ()=>{
       // downscale so the embedded print doesn't bloat the generated PDF
-      const MAX = 700;
+      const MAX = 1400;
       let w = img.naturalWidth, h = img.naturalHeight;
       if(w > MAX || h > MAX){
         const ratio = Math.min(MAX/w, MAX/h);
@@ -1974,6 +1972,72 @@ document.getElementById('btnClear').addEventListener('click', ()=>{
   render();
 });
 
+// Y offsets (in CSS px, relative to the sheet) where a page can be cut without
+// slicing through a line of text or an image.
+function collectBreakpoints(rootEl, sheetEl){
+  const sheetTop = sheetEl.getBoundingClientRect().top;
+  const points = new Set([0]);
+  rootEl.querySelectorAll('div, p, table, tr, img').forEach(el=>{
+    const r = el.getBoundingClientRect();
+    if(r.height > 0){
+      points.add(r.top - sheetTop);
+      points.add(r.bottom - sheetTop);
+    }
+  });
+
+  // A section header must never be the last thing on a page: forbid cuts from
+  // its top through the start of the content it introduces, so the whole
+  // section moves to the next page together.
+  const forbidden = [];
+  rootEl.querySelectorAll('.ficha-sec').forEach(el=>{
+    const r = el.getBoundingClientRect();
+    forbidden.push([r.top - sheetTop - 1, r.bottom - sheetTop + 60]);
+  });
+
+  return Array.from(points)
+    .filter(v => v > 0)
+    .filter(v => !forbidden.some(([a,b]) => v > a && v < b))
+    .sort((a,b)=> a-b);
+}
+
+// Slices the rendered canvas into A4 pages at full page width, so nothing is
+// scaled down: a long document simply continues onto the next page.
+function paginateCanvasToPdf(pdf, canvas, scale, breakpointsCss, pageWidth, pageHeight){
+  const pxPerMm = canvas.width / pageWidth;
+  const pageHeightPx = pageHeight * pxPerMm;
+  const breakpointsPx = breakpointsCss.map(v=> v * scale);
+
+  let y = 0, firstPage = true;
+  let guard = 0;
+  while(y < canvas.height - 1 && guard++ < 40){
+    const target = y + pageHeightPx;
+    let cut;
+    if(target >= canvas.height){
+      cut = canvas.height;
+    } else {
+      // prefer the lowest safe boundary on this page; ignore ones too close to
+      // the top so a page is never mostly blank
+      const candidates = breakpointsPx.filter(p => p > y + pageHeightPx * 0.4 && p <= target);
+      cut = candidates.length ? Math.max.apply(null, candidates) : target;
+    }
+    const sliceHeight = Math.max(1, Math.round(cut - y));
+
+    const slice = document.createElement('canvas');
+    slice.width = canvas.width;
+    slice.height = sliceHeight;
+    const sctx = slice.getContext('2d');
+    sctx.fillStyle = '#ffffff';
+    sctx.fillRect(0, 0, slice.width, slice.height);
+    sctx.drawImage(canvas, 0, -y);
+
+    const heightMm = (sliceHeight / canvas.width) * pageWidth;
+    if(!firstPage) pdf.addPage();
+    pdf.addImage(slice.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pageWidth, heightMm);
+    firstPage = false;
+    y = cut;
+  }
+}
+
 document.getElementById('btnPdf').addEventListener('click', async ()=>{
   const emptyFields = findEmptyFields();
   if(emptyFields.length > 0){
@@ -2002,7 +2066,9 @@ document.getElementById('btnPdf').addEventListener('click', async ()=>{
       breakYCss = breakRect.top - sheetRect.top;
     }
 
-    const scale = 2;
+    // A taller document (ficha) is rendered at a higher scale and paginated at full
+    // width, so it stays legible across pages instead of being shrunk onto one.
+    const scale = docModel === 'ficha' ? 3 : 2;
     const canvas = await html2canvas(sheet, { scale, backgroundColor: '#ffffff' });
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p','mm','a4');
@@ -2032,6 +2098,9 @@ document.getElementById('btnPdf').addEventListener('click', async ()=>{
       pdf.addImage(img1, 'JPEG', x1, 0, w1, h1);
       pdf.addPage();
       pdf.addImage(img2, 'JPEG', x2, 0, w2, h2);
+    } else if(docModel === 'ficha'){
+      const preview = document.getElementById('previewFichaRenda');
+      paginateCanvasToPdf(pdf, canvas, scale, collectBreakpoints(preview, sheet), pageWidth, pageHeight);
     } else {
       const imgData = canvas.toDataURL('image/jpeg', 0.92);
       let imgWidth = pageWidth, imgHeight = (canvas.height * imgWidth) / canvas.width, offsetX = 0, offsetY = 0;
