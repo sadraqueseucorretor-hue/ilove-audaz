@@ -1007,7 +1007,37 @@
         </fieldset>
 
         <fieldset>
-          <legend><span class="num">3</span> Documentos encaminhados</legend>
+          <legend><span class="num">3</span> Instagram profissional</legend>
+          <div class="field">
+            <label>Cliente possui Instagram profissional que comprove seu trabalho?</label>
+            <div style="display:flex; gap:20px; margin-top:4px;">
+              <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3a362e; font-weight:500;"><input type="radio" name="fiInsta" id="fiInstaSim" value="SIM" style="width:16px; height:16px; accent-color:var(--gold-deep);"> SIM</label>
+              <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3a362e; font-weight:500;"><input type="radio" name="fiInsta" id="fiInstaNao" value="NÃO" checked style="width:16px; height:16px; accent-color:var(--gold-deep);"> NÃO</label>
+            </div>
+          </div>
+          <div id="fiInstaWrap" style="display:none;">
+            <div class="field">
+              <label for="fiInstaUser">@ do Instagram</label>
+              <input type="text" id="fiInstaUser" placeholder="@perfil.do.cliente">
+            </div>
+            <div class="field">
+              <label>Print da tela do Instagram</label>
+              <div class="pdf-dropzone" id="fiInstaDrop" style="padding:22px 16px; max-width:none;">
+                <div class="icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
+                <div class="label">Clique ou arraste o print aqui</div>
+                <div class="hint">JPG ou PNG — fica só no seu navegador</div>
+              </div>
+              <div id="fiInstaThumbWrap" style="display:none; margin-top:10px; align-items:center; gap:12px;">
+                <img id="fiInstaThumb" alt="" style="width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid var(--line-strong);">
+                <span id="fiInstaFileName" style="flex:1; font-size:12.5px; color:#5c584e; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+                <button type="button" class="btn-ghost" id="fiInstaRemove" style="padding:7px 12px; font-size:12px;">Remover</button>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="num">4</span> Documentos encaminhados</legend>
           <div style="display:flex; flex-direction:column; gap:10px;">
             <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3a362e; font-weight:500;"><input type="checkbox" id="fiDocExtratos" style="width:16px; height:16px; accent-color:var(--gold-deep);"> Extratos bancários</label>
             <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3a362e; font-weight:500;"><input type="checkbox" id="fiDocDespesas" style="width:16px; height:16px; accent-color:var(--gold-deep);"> Despesas</label>
@@ -1355,6 +1385,22 @@
               </div>
             </div>
 
+
+            <div id="out-fiInstaSection" style="display:none;">
+              <div style="background:var(--navy); color:#fff; font-weight:700; font-size:12px; letter-spacing:0.14em; padding:8px 14px; text-transform:uppercase; margin:18px 0 12px;">Instagram profissional</div>
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="flex:1;">
+                  <div style="font-weight:700; font-size:10.5px; letter-spacing:0.03em; text-transform:uppercase; color:#1a2a4a;">Perfil do cliente:</div>
+                  <div style="background:#eef2fa; border-bottom:1px solid #b9c6dd; padding:5px 8px; min-height:22px; margin-top:3px;" id="out-fiInstaUser">&nbsp;</div>
+                  <div style="font-size:10px; color:#5c584e; margin-top:8px; line-height:1.5;">Print da tela do perfil anexado como comprovação da atividade declarada.</div>
+                </div>
+                <div style="flex:0 0 auto;">
+                  <img id="out-fiInstaImg" alt="" style="display:none; max-width:190px; max-height:250px; border:1px solid #b9c6dd; border-radius:4px;">
+                  <div id="out-fiInstaNoImg" style="width:130px; height:90px; border:1px dashed #b9c6dd; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:9.5px; color:#8a9ab5; text-align:center; padding:6px;">Print não anexado</div>
+                </div>
+              </div>
+            </div>
+
             <div style="background:var(--navy); color:#fff; font-weight:700; font-size:12px; letter-spacing:0.14em; padding:8px 14px; text-transform:uppercase; margin:18px 0 12px;">Declaração de renda informal:</div>
 
             <p style="font-style:italic; text-align:center; font-size:11.5px; line-height:1.7; margin:0 26px 26px; color:#1a1a1a;">
@@ -1580,7 +1626,9 @@ function autoUppercase(el){
     if(start !== null) el.setSelectionRange(start, end);
   });
 }
-document.querySelectorAll('.panel input[type="text"]').forEach(autoUppercase);
+document.querySelectorAll('.panel input[type="text"]').forEach(el=>{
+  if(el.id !== 'fiInstaUser') autoUppercase(el);
+});
 
 document.getElementById('pCpf').addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); render(); });
 document.getElementById('tCpf').addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); render(); });
@@ -1723,6 +1771,61 @@ FICHA_TEXT_FIELDS.forEach(id=> document.getElementById(id).addEventListener('inp
 const FICHA_CHECKS = ['fiFormaPix','fiFormaDinheiro','fiFormaDeposito','fiFreqDiaria','fiFreqSemanal','fiFreqMensal','fiDocExtratos','fiDocDespesas','fiDocRecibos','fiDocIrpf'];
 FICHA_CHECKS.forEach(id=> document.getElementById(id).addEventListener('change', render));
 document.querySelectorAll('input[name="fiDependente"]').forEach(r=> r.addEventListener('change', render));
+document.querySelectorAll('input[name="fiInsta"]').forEach(r=> r.addEventListener('change', render));
+document.getElementById('fiInstaUser').addEventListener('input', render);
+
+let fiInstaImageData = null;
+
+function loadInstaScreenshot(file){
+  if(!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{
+      // downscale so the embedded print doesn't bloat the generated PDF
+      const MAX = 700;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if(w > MAX || h > MAX){
+        const ratio = Math.min(MAX/w, MAX/h);
+        w = Math.round(w*ratio); h = Math.round(h*ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      fiInstaImageData = canvas.toDataURL('image/jpeg', 0.85);
+      document.getElementById('fiInstaThumb').src = fiInstaImageData;
+      document.getElementById('fiInstaFileName').textContent = file.name;
+      document.getElementById('fiInstaThumbWrap').style.display = 'flex';
+      document.getElementById('fiInstaDrop').style.display = 'none';
+      render();
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearInstaScreenshot(){
+  fiInstaImageData = null;
+  document.getElementById('fiInstaThumbWrap').style.display = 'none';
+  document.getElementById('fiInstaDrop').style.display = 'block';
+  render();
+}
+
+(function setupInstaDropzone(){
+  const drop = document.getElementById('fiInstaDrop');
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/*'; input.style.display = 'none';
+  drop.appendChild(input);
+  drop.addEventListener('click', ()=> input.click());
+  input.addEventListener('change', ()=>{ if(input.files[0]) loadInstaScreenshot(input.files[0]); input.value=''; });
+  ['dragenter','dragover'].forEach(ev=> drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(ev=> drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.remove('dragover'); }));
+  drop.addEventListener('drop', e=>{
+    const f = Array.from(e.dataTransfer.files).find(x=> x.type.startsWith('image/'));
+    if(f) loadInstaScreenshot(f);
+  });
+  document.getElementById('fiInstaRemove').addEventListener('click', clearInstaScreenshot);
+})();
 document.getElementById('fiCpf').addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); render(); });
 document.getElementById('fiTelefone').addEventListener('input', e=>{ e.target.value = maskPhone(e.target.value); render(); });
 
@@ -1764,6 +1867,26 @@ function renderFichaRenda(){
 
   FICHA_CHECKS.forEach(id=> setFichaBox('out-'+id, document.getElementById(id).checked));
 
+  const instaSel = document.querySelector('input[name="fiInsta"]:checked');
+  const temInsta = instaSel && instaSel.value === 'SIM';
+  document.getElementById('fiInstaWrap').style.display = temInsta ? 'block' : 'none';
+  document.getElementById('out-fiInstaSection').style.display = temInsta ? 'block' : 'none';
+  if(temInsta){
+    let user = t('fiInstaUser');
+    if(user && !user.startsWith('@')) user = '@' + user;
+    out('out-fiInstaUser', user);
+    const imgEl = document.getElementById('out-fiInstaImg');
+    const noImgEl = document.getElementById('out-fiInstaNoImg');
+    if(fiInstaImageData){
+      imgEl.src = fiInstaImageData;
+      imgEl.style.display = 'block';
+      noImgEl.style.display = 'none';
+    } else {
+      imgEl.style.display = 'none';
+      noImgEl.style.display = 'flex';
+    }
+  }
+
   const dataStr2 = document.getElementById('dataAss').value;
   if(dataStr2){
     const [y,m,d] = dataStr2.split('-');
@@ -1786,7 +1909,7 @@ const DOC_META = {
   cancelamento: { fieldsetsId:'fieldsCancelamento', previewId:'previewCancelamento', dataNum:'2', btnLabel:'↓ Emitir Carta (PDF)' },
   autorizacao: { fieldsetsId:'fieldsAutorizacao', previewId:'previewAutorizacao', dataNum:'3', btnLabel:'↓ Emitir Autorização (PDF)' },
   renda: { fieldsetsId:'fieldsRendaInformal', previewId:'previewRendaInformal', dataNum:'5', btnLabel:'↓ Emitir Levantamento (PDF)' },
-  ficha: { fieldsetsId:'fieldsFichaRenda', previewId:'previewFichaRenda', dataNum:'4', btnLabel:'↓ Emitir Ficha (PDF)' }
+  ficha: { fieldsetsId:'fieldsFichaRenda', previewId:'previewFichaRenda', dataNum:'5', btnLabel:'↓ Emitir Ficha (PDF)' }
 };
 
 function switchDoc(){
@@ -1839,6 +1962,9 @@ document.getElementById('btnClear').addEventListener('click', ()=>{
   });
   FICHA_CHECKS.forEach(id=> document.getElementById(id).checked = false);
   document.getElementById('fiDepNao').checked = true;
+  document.getElementById('fiInstaNao').checked = true;
+  document.getElementById('fiInstaUser').value = '';
+  clearInstaScreenshot();
   document.querySelectorAll('.ri-cell').forEach(el=> el.value = '');
   updateRendaGrid();
   document.getElementById('cidadeAss').value = 'Fortaleza/CE';
