@@ -1230,6 +1230,15 @@ function maskCpf(v){
   return v;
 }
 
+function autoUppercase(el){
+  el.addEventListener('input', ()=>{
+    const start = el.selectionStart, end = el.selectionEnd;
+    el.value = el.value.toUpperCase();
+    if(start !== null) el.setSelectionRange(start, end);
+  });
+}
+document.querySelectorAll('.panel input[type="text"]').forEach(autoUppercase);
+
 document.getElementById('pCpf').addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); render(); });
 document.getElementById('tCpf').addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); render(); });
 document.getElementById('ccCpf').addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); render(); });
