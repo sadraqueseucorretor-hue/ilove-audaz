@@ -1041,7 +1041,15 @@
         </fieldset>
 
         <fieldset>
-          <legend><span class="num">4</span> Documentos encaminhados</legend>
+          <legend><span class="num">4</span> Assinatura</legend>
+          <div class="check-row">
+            <input type="checkbox" id="fiAssina">
+            <span>O cliente vai assinar este formulário? (por padrão sai sem campo de assinatura)</span>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="num">5</span> Documentos encaminhados</legend>
           <div style="display:flex; flex-direction:column; gap:10px;">
             <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3a362e; font-weight:500;"><input type="checkbox" id="fiDocExtratos" style="width:16px; height:16px; accent-color:var(--gold-deep);"> Extratos bancários</label>
             <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#3a362e; font-weight:500;"><input type="checkbox" id="fiDocDespesas" style="width:16px; height:16px; accent-color:var(--gold-deep);"> Despesas</label>
@@ -1410,11 +1418,11 @@
             </p>
 
             <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-top:34px;">
-              <div style="flex:1; text-align:center;">
+              <div id="out-fiAssinatura" style="flex:1; text-align:center; display:none;">
                 <div style="border-bottom:1.5px solid #1a2a4a; height:22px;"></div>
                 <div style="font-size:9.5px; font-weight:700; letter-spacing:0.04em; color:#1a2a4a; margin-top:5px; text-transform:uppercase;">Assinatura do proponente</div>
               </div>
-              <div style="font-size:11px; white-space:nowrap; padding-bottom:4px;">
+              <div style="font-size:11px; white-space:nowrap; padding-bottom:4px; margin-left:auto;">
                 <b>DATA:</b>
                 <span id="out-fiDia" style="display:inline-block; min-width:26px; border-bottom:1px solid #1a2a4a; text-align:center;">&nbsp;</span> /
                 <span id="out-fiMes" style="display:inline-block; min-width:26px; border-bottom:1px solid #1a2a4a; text-align:center;">&nbsp;</span> /
@@ -1774,6 +1782,7 @@ const FICHA_CHECKS = ['fiFormaPix','fiFormaDinheiro','fiFormaDeposito','fiFreqDi
 FICHA_CHECKS.forEach(id=> document.getElementById(id).addEventListener('change', render));
 document.querySelectorAll('input[name="fiDependente"]').forEach(r=> r.addEventListener('change', render));
 document.querySelectorAll('input[name="fiInsta"]').forEach(r=> r.addEventListener('change', render));
+document.getElementById('fiAssina').addEventListener('change', render);
 document.getElementById('fiInstaUser').addEventListener('input', render);
 
 let fiInstaImageData = null;
@@ -1922,6 +1931,9 @@ function renderFichaRenda(){
 
   FICHA_CHECKS.forEach(id=> setFichaBox('out-'+id, document.getElementById(id).checked));
 
+  const assinaturaEl = document.getElementById('out-fiAssinatura');
+  if(assinaturaEl) assinaturaEl.style.display = document.getElementById('fiAssina').checked ? 'block' : 'none';
+
   const instaSel = document.querySelector('input[name="fiInsta"]:checked');
   const temInsta = instaSel && instaSel.value === 'SIM';
   document.getElementById('fiInstaWrap').style.display = temInsta ? 'block' : 'none';
@@ -1965,7 +1977,7 @@ const DOC_META = {
   cancelamento: { fieldsetsId:'fieldsCancelamento', previewId:'previewCancelamento', dataNum:'2', btnLabel:'↓ Emitir Carta (PDF)' },
   autorizacao: { fieldsetsId:'fieldsAutorizacao', previewId:'previewAutorizacao', dataNum:'3', btnLabel:'↓ Emitir Autorização (PDF)' },
   renda: { fieldsetsId:'fieldsRendaInformal', previewId:'previewRendaInformal', dataNum:'5', btnLabel:'↓ Emitir Levantamento (PDF)' },
-  ficha: { fieldsetsId:'fieldsFichaRenda', previewId:'previewFichaRenda', dataNum:'5', btnLabel:'↓ Emitir Ficha (PDF)' }
+  ficha: { fieldsetsId:'fieldsFichaRenda', previewId:'previewFichaRenda', dataNum:'6', btnLabel:'↓ Emitir Ficha (PDF)' }
 };
 
 function switchDoc(){
@@ -2019,6 +2031,7 @@ document.getElementById('btnClear').addEventListener('click', ()=>{
   FICHA_CHECKS.forEach(id=> document.getElementById(id).checked = false);
   document.getElementById('fiDepNao').checked = true;
   document.getElementById('fiInstaNao').checked = true;
+  document.getElementById('fiAssina').checked = false;
   document.getElementById('fiInstaUser').value = '';
   clearInstaScreenshot();
   document.querySelectorAll('.ri-cell').forEach(el=> el.value = '');
