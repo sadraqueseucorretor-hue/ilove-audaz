@@ -1678,6 +1678,22 @@ function formatBRL(n){
   return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
 }
 
+function maskCurrencyInput(el){
+  el.addEventListener('input', ()=>{
+    let digits = el.value.replace(/\D/g,'');
+    digits = digits.replace(/^0+(?=\d)/, '');
+    if(!digits){ el.value = ''; updateRendaGrid(); return; }
+    while(digits.length < 3) digits = '0' + digits;
+    const cents = digits.slice(-2);
+    const intPart = String(parseInt(digits.slice(0, -2), 10));
+    el.value = 'R$ ' + intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + cents;
+    updateRendaGrid();
+  });
+  el.addEventListener('focus', ()=>{
+    setTimeout(()=> el.setSelectionRange(el.value.length, el.value.length), 0);
+  });
+}
+
 function buildRendaGrid(){
   const formHost = document.getElementById('riGridHost');
   const previewHost = document.getElementById('riPreviewGridHost');
@@ -1690,7 +1706,7 @@ function buildRendaGrid(){
   for(let d=1; d<=31; d++){
     formHtml += `<tr><td style="text-align:center; font-size:10.5px; color:#8a8578; padding:2px 4px;">${d}</td>`;
     for(let m=1;m<=6;m++){
-      formHtml += `<td style="padding:1px;"><input type="text" inputmode="decimal" data-day="${d}" data-month="${m}" class="ri-cell" style="width:54px; border:1px solid var(--line-strong); border-radius:4px; padding:4px 3px; font-size:11px; text-align:right;"></td>`;
+      formHtml += `<td style="padding:1px;"><input type="text" inputmode="numeric" data-day="${d}" data-month="${m}" class="ri-cell" placeholder="R$ 0,00" style="width:76px; border:1px solid var(--line-strong); border-radius:4px; padding:4px 4px; font-size:10.5px; text-align:right;"></td>`;
     }
     formHtml += '</tr>';
   }
@@ -1719,7 +1735,7 @@ function buildRendaGrid(){
   previewHost.innerHTML = pvHtml;
 
   formHost.querySelectorAll('.ri-cell').forEach(inp=>{
-    inp.addEventListener('input', updateRendaGrid);
+    maskCurrencyInput(inp);
   });
   updateRendaGrid();
 }
