@@ -1102,6 +1102,11 @@
       <div class="pdf-tool-title">Imagem → PDF</div>
       <div class="pdf-tool-desc">Una fotos ou imagens em um único PDF.</div>
     </button>
+    <button type="button" class="pdf-tool-card" data-tool="unlock">
+      <div class="pdf-tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.7-1.3"/></svg></div>
+      <div class="pdf-tool-title">Desbloquear PDF</div>
+      <div class="pdf-tool-desc">Informe a senha do arquivo e remova a proteção.</div>
+    </button>
     </div>
 
     <div class="pdf-workspace" id="pdfWorkspace" style="display:none;">
@@ -1758,7 +1763,8 @@ render();
     rotate:   { title:'Girar PDF', sub:'Gire páginas específicas ou o documento inteiro.', init: initRotateTool },
     extract:  { title:'Extrair páginas', sub:'Selecione as páginas que devem entrar no novo PDF.', init: initExtractTool },
     pdf2img:  { title:'PDF → Imagem', sub:'Envie um PDF e baixe cada página como JPG ou PNG.', init: initPdf2ImgTool },
-    img2pdf:  { title:'Imagem → PDF', sub:'Envie fotos ou imagens e una tudo em um único PDF.', init: initImg2PdfTool }
+    img2pdf:  { title:'Imagem → PDF', sub:'Envie fotos ou imagens e una tudo em um único PDF.', init: initImg2PdfTool },
+    unlock:   { title:'Desbloquear PDF', sub:'Informe a senha do arquivo para gerar uma cópia sem proteção.', init: initUnlockTool }
   };
 
   function openTool(key){
@@ -2427,6 +2433,86 @@ render();
     });
   }
 
+  // ===== TOOL: DESBLOQUEAR (REMOVER SENHA) =====
+  function initUnlockTool(container){
+    container.innerHTML = `
+      <div class="pdf-dropzone" id="ulDrop">${dropzoneInner('Clique ou arraste um PDF protegido aqui')}</div>
+      <div id="ulArea" style="display:none;">
+        <div class="pdf-status" id="ulInfo"></div>
+        <div class="field" style="max-width:320px; margin-top:14px;">
+          <label for="ulPassword">Senha do PDF</label>
+          <input type="password" id="ulPassword" class="pdf-text-input" placeholder="Digite a senha do arquivo">
+        </div>
+        <div class="pdf-status" style="margin-top:10px; max-width:520px;">O arquivo é reconstruído sem a senha a partir das páginas decodificadas — por isso o texto deixa de ser selecionável/pesquisável na cópia gerada.</div>
+        <div class="pdf-toolbar" style="margin-top:16px;">
+          <button type="button" class="btn-primary" id="ulBtn">↓ Desbloquear e baixar</button>
+          <button type="button" class="btn-ghost" id="ulReset">Trocar arquivo</button>
+        </div>
+        <div class="pdf-status" id="ulStatus"></div>
+      </div>
+    `;
+    const drop = container.querySelector('#ulDrop');
+    const area = container.querySelector('#ulArea');
+    const info = container.querySelector('#ulInfo');
+    const passwordInput = container.querySelector('#ulPassword');
+    const btn = container.querySelector('#ulBtn');
+    const status = container.querySelector('#ulStatus');
+    let file = null;
+
+    setupDropzone(drop, ([f])=>{
+      file = f; drop.style.display='none'; area.style.display='block';
+      info.textContent = `${file.name} — ${fmtBytes(file.size)}`;
+      setTimeout(()=> passwordInput.focus(), 10);
+    });
+
+    container.querySelector('#ulReset').addEventListener('click', ()=>{
+      file=null; area.style.display='none'; drop.style.display='block'; status.textContent=''; passwordInput.value='';
+    });
+
+    passwordInput.addEventListener('keydown', e=>{ if(e.key === 'Enter') btn.click(); });
+
+    btn.addEventListener('click', async ()=>{
+      if(!file) return;
+      const original = btn.innerHTML; btn.innerHTML = '<span class="pdf-spinner"></span>Desbloqueando...'; btn.disabled = true;
+      status.classList.remove('error'); status.textContent = '';
+      try{
+        await ensurePdfWorker();
+        const bytes = await fileToArrayBuffer(file);
+        const pdfjsDoc = await pdfjsLib.getDocument({ data: bytes.slice(0), password: passwordInput.value }).promise;
+        const { jsPDF } = window.jspdf;
+        let outPdf = null;
+        for(let i=1;i<=pdfjsDoc.numPages;i++){
+          const page = await pdfjsDoc.getPage(i);
+          const baseVp = page.getViewport({ scale: 1 });
+          const renderVp = page.getViewport({ scale: 2 });
+          const canvas = document.createElement('canvas');
+          canvas.width = renderVp.width; canvas.height = renderVp.height;
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport: renderVp }).promise;
+          const imgData = canvas.toDataURL('image/jpeg', 0.95);
+          const orientation = baseVp.width > baseVp.height ? 'l' : 'p';
+          if(!outPdf) outPdf = new jsPDF({ orientation, unit:'pt', format:[baseVp.width, baseVp.height] });
+          else outPdf.addPage([baseVp.width, baseVp.height], orientation);
+          outPdf.addImage(imgData, 'JPEG', 0, 0, baseVp.width, baseVp.height);
+        }
+        const blob = outPdf.output('blob');
+        const baseName = file.name.replace(/\.pdf$/i, '');
+        downloadBlob(blob, `${baseName}_desbloqueado.pdf`);
+        status.textContent = `PDF desbloqueado com ${pdfjsDoc.numPages} página(s).`;
+        if(window.logHistory) window.logHistory('tool:unlock', file.name);
+      } catch(err){
+        console.error(err);
+        status.classList.add('error');
+        if(err && err.name === 'PasswordException'){
+          status.textContent = 'Senha incorreta. Confira e tente novamente.';
+        } else {
+          status.textContent = 'Não foi possível desbloquear o arquivo.';
+        }
+      } finally {
+        btn.innerHTML = original; btn.disabled = false;
+      }
+    });
+  }
+
 })();
 </script>
 <script>
@@ -2448,7 +2534,8 @@ render();
     image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
     doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 13h6M9 17h6"/></svg>',
     star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l3.09 6.26L22 9.77l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.64l-5-4.87 6.91-1.01z"/></svg>',
-    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>'
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
+    unlock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.7-1.3"/></svg>'
   };
 
   const CATALOG = {
@@ -2462,7 +2549,8 @@ render();
     'tool:rotate':       { kind:'tool', target:'rotate',   label:'Girar PDF',               sub:'Rotacione páginas facilmente',  icon:'rotate' },
     'tool:extract':      { kind:'tool', target:'extract',  label:'Extrair páginas',         sub:'Crie um PDF só com as selecionadas', icon:'extract' },
     'tool:pdf2img':      { kind:'tool', target:'pdf2img',  label:'PDF → Imagem',            sub:'Converta para JPG/PNG',         icon:'image' },
-    'tool:img2pdf':      { kind:'tool', target:'img2pdf',  label:'Imagem → PDF',            sub:'Converta imagens em PDF',       icon:'image' }
+    'tool:img2pdf':      { kind:'tool', target:'img2pdf',  label:'Imagem → PDF',            sub:'Converta imagens em PDF',       icon:'image' },
+    'tool:unlock':       { kind:'tool', target:'unlock',   label:'Desbloquear PDF',         sub:'Remova a senha informando-a',   icon:'unlock' }
   };
 
   // ---------- storage helpers ----------
