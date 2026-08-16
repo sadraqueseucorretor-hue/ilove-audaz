@@ -904,7 +904,7 @@
           <div id="riMonthTabsHost" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;"></div>
           <div class="field">
             <label for="riMonthLabel">Mês de referência</label>
-            <input type="text" id="riMonthLabel" placeholder="Ex.: Março/2026">
+            <select id="riMonthLabel" class="field-input"></select>
           </div>
           <div id="riGridHost" style="margin-top:10px;"></div>
         </fieldset>
@@ -1804,14 +1804,29 @@ function buildRendaGrid(){
   pvHtml += '</tr></tbody></table>';
   previewHost.innerHTML = pvHtml;
 
+  populateMonthLabelSelect();
   renderMonthTabs();
   renderActiveMonthTable();
-  document.getElementById('riMonthLabel').addEventListener('input', (e)=>{
+  document.getElementById('riMonthLabel').addEventListener('change', (e)=>{
     riMonthLabels[riActiveMonth-1] = e.target.value;
     updatePreviewMonthHeaders();
     renderMonthTabs();
   });
   updateRendaGrid();
+}
+
+function populateMonthLabelSelect(){
+  const sel = document.getElementById('riMonthLabel');
+  if(!sel) return;
+  const mesesCap = MESES.map(m => m.charAt(0).toUpperCase() + m.slice(1));
+  let html = '<option value="">Selecione o mês...</option>';
+  const now = new Date();
+  for(let i=0; i<24; i++){
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const label = mesesCap[d.getMonth()] + '/' + d.getFullYear();
+    html += `<option value="${label}">${label}</option>`;
+  }
+  sel.innerHTML = html;
 }
 
 function updateRendaGrid(){
