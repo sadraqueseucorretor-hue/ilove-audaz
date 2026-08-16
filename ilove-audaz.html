@@ -1839,6 +1839,34 @@ function setFichaBox(id, checked){
   if(el) el.classList.toggle('checked', !!checked);
 }
 
+// Sizes the Instagram print to whatever room is left on the current page, so the
+// block stays on the same page as the profile instead of being pushed to the
+// next one. If the leftover space is too small to stay readable, the image keeps
+// a generous size and the whole (atomic) block moves to the next page.
+function fitInstaImageToPage(){
+  const sheet = document.getElementById('sheet');
+  const section = document.getElementById('out-fiInstaSection');
+  const img = document.getElementById('out-fiInstaImg');
+  if(!sheet || !section || !img || section.style.display === 'none' || img.style.display === 'none') return;
+
+  const MIN_IMG = 240;   // below this the screenshot stops being readable
+  const MAX_IMG = 620;
+
+  img.style.maxHeight = MAX_IMG + 'px';
+  const sheetRect = sheet.getBoundingClientRect();
+  if(!sheetRect.width) return;
+
+  const pageHeight = sheetRect.width * 297 / 210;
+  const sectionTop = section.getBoundingClientRect().top - sheetRect.top;
+  const overhead = section.getBoundingClientRect().height - img.getBoundingClientRect().height;
+  const roomLeft = pageHeight - (sectionTop % pageHeight);
+  const availableForImage = roomLeft - overhead - 16;
+
+  img.style.maxHeight = (availableForImage >= MIN_IMG)
+    ? Math.min(MAX_IMG, Math.floor(availableForImage)) + 'px'
+    : MAX_IMG + 'px';
+}
+
 function renderFichaRenda(){
   const t = id => (document.getElementById(id).value || '').trim();
   const out = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val ? escapeHtmlBasic(val) : '&nbsp;'; };
@@ -1883,6 +1911,7 @@ function renderFichaRenda(){
       imgEl.style.display = 'none';
       noImgEl.style.display = 'flex';
     }
+    fitInstaImageToPage();
   }
 
   const dataStr2 = document.getElementById('dataAss').value;
@@ -1993,6 +2022,14 @@ function collectBreakpoints(rootEl, sheetEl){
     const r = el.getBoundingClientRect();
     forbidden.push([r.top - sheetTop - 1, r.bottom - sheetTop + 60]);
   });
+
+  // The Instagram block (header + handle + screenshot) is one unit: never cut
+  // through it, so the print is never separated from the profile it belongs to.
+  const insta = document.getElementById('out-fiInstaSection');
+  if(insta && insta.style.display !== 'none'){
+    const r = insta.getBoundingClientRect();
+    forbidden.push([r.top - sheetTop + 1, r.bottom - sheetTop - 1]);
+  }
 
   return Array.from(points)
     .filter(v => v > 0)
