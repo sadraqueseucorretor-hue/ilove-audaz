@@ -1018,13 +1018,17 @@
           <div id="fiInstaWrap" style="display:none;">
             <div class="field">
               <label for="fiInstaUser">@ do Instagram</label>
-              <input type="text" id="fiInstaUser" placeholder="@perfil.do.cliente">
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="fiInstaUser" placeholder="@perfil.do.cliente" style="flex:1;">
+                <button type="button" class="btn-ghost" id="fiInstaOpen" title="Abrir o perfil no Instagram" style="white-space:nowrap; padding:10px 14px;">Abrir perfil ↗</button>
+              </div>
+              <div style="font-size:11.5px;color:#a29c8c;margin-top:5px;">Abra o perfil, tire o print e cole aqui com Ctrl+V (⌘V no Mac).</div>
             </div>
             <div class="field">
               <label>Print da tela do Instagram</label>
               <div class="pdf-dropzone" id="fiInstaDrop" style="padding:22px 16px; max-width:none;">
                 <div class="icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
-                <div class="label">Clique ou arraste o print aqui</div>
+                <div class="label">Clique, arraste ou cole (Ctrl+V) o print aqui</div>
                 <div class="hint">JPG ou PNG — fica só no seu navegador</div>
               </div>
               <div id="fiInstaThumbWrap" style="display:none; margin-top:10px; align-items:center; gap:12px;">
@@ -1823,6 +1827,31 @@ function clearInstaScreenshot(){
     if(f) loadInstaScreenshot(f);
   });
   document.getElementById('fiInstaRemove').addEventListener('click', clearInstaScreenshot);
+
+  document.getElementById('fiInstaOpen').addEventListener('click', ()=>{
+    const handle = document.getElementById('fiInstaUser').value.trim().replace(/^@+/, '');
+    if(!handle){
+      alert('Digite o @ do cliente primeiro.');
+      document.getElementById('fiInstaUser').focus();
+      return;
+    }
+    window.open('https://www.instagram.com/' + encodeURIComponent(handle) + '/', '_blank', 'noopener');
+  });
+
+  // Paste a screenshot straight from the clipboard — no need to save the file
+  // first. Only acts while the ficha's Instagram section is actually open, and
+  // never swallows a normal text paste.
+  document.addEventListener('paste', (e)=>{
+    if(document.getElementById('docModel').value !== 'ficha') return;
+    if(document.getElementById('fiInstaWrap').style.display === 'none') return;
+    const items = Array.from((e.clipboardData && e.clipboardData.items) || []);
+    const imageItem = items.find(it => it.type && it.type.startsWith('image/'));
+    if(!imageItem) return;
+    const file = imageItem.getAsFile();
+    if(!file) return;
+    e.preventDefault();
+    loadInstaScreenshot(file);
+  });
 })();
 document.getElementById('fiCpf').addEventListener('input', e=>{ e.target.value = maskCpf(e.target.value); render(); });
 document.getElementById('fiTelefone').addEventListener('input', e=>{ e.target.value = maskPhone(e.target.value); render(); });
