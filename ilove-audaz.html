@@ -199,6 +199,18 @@
   .check-row input{ margin-top:2px; width:16px; height:16px; accent-color:var(--gold-deep); }
   .check-row span{ font-size:12.5px; color:#5c584e; line-height:1.4; }
 
+  .ri-month-tab{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:11.5px;
+    background:var(--paper-dim); border:1px solid var(--line-strong); color:#5c584e;
+    border-radius:7px; padding:7px 12px; cursor:pointer; transition:background .15s, color .15s, border-color .15s;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .ri-month-tab:hover{ background:#fff; border-color:var(--gold); }
+  .ri-month-tab.active{ background:var(--gold-deep); border-color:var(--gold-deep); color:#fff; }
+  .ri-month-tab .dot{ width:6px; height:6px; border-radius:50%; background:var(--ok); display:none; flex-shrink:0; }
+  .ri-month-tab.has-data .dot{ display:block; }
+  .ri-month-tab.active .dot{ background:#fff; }
+
   .actions{ display:flex; gap:10px; margin-top:8px; position:sticky; bottom:0; padding-top:14px; background:linear-gradient(180deg, rgba(255,253,249,0) 0%, #fffdf9 30%); }
   button{
     font-family:'Inter',sans-serif; font-weight:700; font-size:13.5px; cursor:pointer;
@@ -888,8 +900,13 @@
 
         <fieldset>
           <legend><span class="num">3</span> Movimentação diária (últimos 6 meses)</legend>
-          <div style="font-size:11.5px;color:#a29c8c;margin-bottom:10px;">Preencha os valores de cada dia, por mês. Os totais são calculados automaticamente.</div>
-          <div id="riGridHost" style="overflow-x:auto; margin:0 -8px;"></div>
+          <div style="font-size:11.5px;color:#a29c8c;margin-bottom:10px;">Preencha um mês por vez. Os totais e o documento final mostram os 6 meses juntos.</div>
+          <div id="riMonthTabsHost" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;"></div>
+          <div class="field">
+            <label for="riMonthLabel">Mês de referência</label>
+            <input type="text" id="riMonthLabel" placeholder="Ex.: Março/2026">
+          </div>
+          <div id="riGridHost" style="margin-top:10px;"></div>
         </fieldset>
 
         <fieldset>
@@ -1694,31 +1711,84 @@ function maskCurrencyInput(el){
   });
 }
 
+const riValues = {};
+const riMonthLabels = ['','','','','',''];
+let riActiveMonth = 1;
+
+function escapeHtmlSimple(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function syncActiveMonthToState(){
+  document.querySelectorAll('#riGridHost .ri-cell').forEach(inp=>{
+    riValues[`${inp.dataset.day}_${riActiveMonth}`] = inp.value;
+  });
+}
+
+function renderActiveMonthTable(){
+  const formHost = document.getElementById('riGridHost');
+  if(!formHost) return;
+  let html = '<table style="border-collapse:collapse; font-size:12px; width:100%; max-width:260px;"><thead><tr>';
+  html += '<th style="padding:5px 6px; text-align:left; color:#5c584e; font-size:10.5px;">DIA</th>';
+  html += '<th style="padding:5px 6px; text-align:right; color:#5c584e; font-size:10.5px;">VALOR (R$)</th>';
+  html += '</tr></thead><tbody>';
+  for(let d=1; d<=31; d++){
+    const shade = d % 2 === 0 ? ' style="background:var(--paper-dim);"' : '';
+    html += `<tr${shade}><td style="padding:3px 6px; color:#8a8578; font-size:11.5px;">${d}</td>`;
+    html += `<td style="padding:2px 0;"><input type="text" inputmode="numeric" data-day="${d}" class="ri-cell" placeholder="R$ 0,00" style="width:100%; border:1px solid var(--line-strong); border-radius:5px; padding:6px 8px; font-size:12px; text-align:right;"></td></tr>`;
+  }
+  html += '<tr><td style="padding:8px 6px; font-weight:700; font-size:11.5px; color:var(--ink);">TOTAL DO MÊS</td>';
+  html += '<td style="padding:8px 0; font-weight:700; font-size:12.5px; text-align:right; color:var(--ink);" id="riActiveMonthTotal">R$ 0,00</td></tr>';
+  html += '</tbody></table>';
+  formHost.innerHTML = html;
+
+  formHost.querySelectorAll('.ri-cell').forEach(inp=>{
+    const saved = riValues[`${inp.dataset.day}_${riActiveMonth}`];
+    if(saved) inp.value = saved;
+    maskCurrencyInput(inp);
+  });
+}
+
+function renderMonthTabs(){
+  const host = document.getElementById('riMonthTabsHost');
+  if(!host) return;
+  let html = '';
+  for(let m=1;m<=6;m++){
+    let hasData = false;
+    for(let d=1; d<=31; d++){ if(parseRendaValue(riValues[`${d}_${m}`]||'') > 0){ hasData = true; break; } }
+    const label = riMonthLabels[m-1] ? riMonthLabels[m-1] : ('Mês '+m);
+    html += `<button type="button" class="ri-month-tab ${m===riActiveMonth?'active':''} ${hasData?'has-data':''}" data-month="${m}"><span class="dot"></span>${escapeHtmlSimple(label)}</button>`;
+  }
+  host.innerHTML = html;
+  host.querySelectorAll('.ri-month-tab').forEach(btn=>{
+    btn.addEventListener('click', ()=> switchMonthTab(parseInt(btn.dataset.month,10)));
+  });
+}
+
+function switchMonthTab(m){
+  if(m === riActiveMonth) return;
+  syncActiveMonthToState();
+  riActiveMonth = m;
+  document.getElementById('riMonthLabel').value = riMonthLabels[m-1] || '';
+  renderActiveMonthTable();
+  renderMonthTabs();
+}
+
+function updatePreviewMonthHeaders(){
+  for(let m=1;m<=6;m++){
+    const th = document.getElementById('out-riMonthHeader_'+m);
+    if(th) th.textContent = riMonthLabels[m-1] ? riMonthLabels[m-1].toUpperCase() : ('MÊS '+m);
+  }
+}
+
 function buildRendaGrid(){
   const formHost = document.getElementById('riGridHost');
   const previewHost = document.getElementById('riPreviewGridHost');
   if(!formHost || !previewHost) return;
 
-  let formHtml = '<table style="border-collapse:collapse; font-size:11px;"><thead><tr>';
-  formHtml += '<th style="padding:4px 3px; text-align:center; color:#5c584e; font-size:10px;">DIA</th>';
-  for(let m=1;m<=6;m++) formHtml += `<th style="padding:4px 3px; text-align:center; color:#5c584e; font-size:10px;">MÊS ${m}</th>`;
-  formHtml += '</tr></thead><tbody>';
-  for(let d=1; d<=31; d++){
-    formHtml += `<tr><td style="text-align:center; font-size:10.5px; color:#8a8578; padding:2px 4px;">${d}</td>`;
-    for(let m=1;m<=6;m++){
-      formHtml += `<td style="padding:1px;"><input type="text" inputmode="numeric" data-day="${d}" data-month="${m}" class="ri-cell" placeholder="R$ 0,00" style="width:76px; border:1px solid var(--line-strong); border-radius:4px; padding:4px 4px; font-size:10.5px; text-align:right;"></td>`;
-    }
-    formHtml += '</tr>';
-  }
-  formHtml += '<tr>';
-  formHtml += '<td style="text-align:center; font-size:10px; font-weight:700; color:var(--ink); padding:5px 2px;">TOTAL</td>';
-  for(let m=1;m<=6;m++) formHtml += `<td style="text-align:center; font-size:10px; font-weight:700; color:var(--ink); padding:5px 2px;" id="riFormTotal_${m}">R$ 0,00</td>`;
-  formHtml += '</tr></tbody></table>';
-  formHost.innerHTML = formHtml;
-
   let pvHtml = '<table style="width:100%; border-collapse:collapse; font-size:10.5px;"><thead><tr>';
   pvHtml += '<th style="background:var(--navy); color:#fff; padding:5px 4px; border:1px solid #0a1330;">DIA</th>';
-  for(let m=1;m<=6;m++) pvHtml += `<th style="background:var(--navy); color:#fff; padding:5px 4px; border:1px solid #0a1330;">MÊS ${m}</th>`;
+  for(let m=1;m<=6;m++) pvHtml += `<th style="background:var(--navy); color:#fff; padding:5px 4px; border:1px solid #0a1330;" id="out-riMonthHeader_${m}">MÊS ${m}</th>`;
   pvHtml += '</tr></thead><tbody>';
   for(let d=1; d<=31; d++){
     const shade = d % 2 === 0 ? ' style="background:var(--paper-dim);"' : '';
@@ -1734,31 +1804,38 @@ function buildRendaGrid(){
   pvHtml += '</tr></tbody></table>';
   previewHost.innerHTML = pvHtml;
 
-  formHost.querySelectorAll('.ri-cell').forEach(inp=>{
-    maskCurrencyInput(inp);
+  renderMonthTabs();
+  renderActiveMonthTable();
+  document.getElementById('riMonthLabel').addEventListener('input', (e)=>{
+    riMonthLabels[riActiveMonth-1] = e.target.value;
+    updatePreviewMonthHeaders();
+    renderMonthTabs();
   });
   updateRendaGrid();
 }
 
 function updateRendaGrid(){
+  syncActiveMonthToState();
   let grandTotal = 0;
   for(let m=1;m<=6;m++){
     let monthTotal = 0;
     for(let d=1; d<=31; d++){
-      const inp = document.querySelector(`.ri-cell[data-day="${d}"][data-month="${m}"]`);
-      const val = parseRendaValue(inp ? inp.value : '');
+      const val = parseRendaValue(riValues[`${d}_${m}`] || '');
       monthTotal += val;
       const outCell = document.getElementById(`out-ri-${d}-${m}`);
       if(outCell) outCell.innerHTML = val > 0 ? formatBRL(val) : '&nbsp;';
     }
     grandTotal += monthTotal;
-    const formTotalEl = document.getElementById('riFormTotal_'+m);
     const outTotalEl = document.getElementById('out-riTotal_'+m);
-    if(formTotalEl) formTotalEl.textContent = formatBRL(monthTotal);
     if(outTotalEl) outTotalEl.textContent = formatBRL(monthTotal);
+    if(m === riActiveMonth){
+      const activeTotalEl = document.getElementById('riActiveMonthTotal');
+      if(activeTotalEl) activeTotalEl.textContent = formatBRL(monthTotal);
+    }
   }
   const grandEl = document.getElementById('out-riTotalGeral');
   if(grandEl) grandEl.textContent = formatBRL(grandTotal);
+  renderMonthTabs();
 }
 
 buildRendaGrid();
