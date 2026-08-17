@@ -1580,7 +1580,7 @@
         <div class="page-head">
           <div>
             <div class="page-head-title">Usuários</div>
-            <div class="page-head-sub">Cadastre a equipe e controle quem pode entrar no sistema</div>
+            <div class="page-head-sub" id="uModo">Cadastre a equipe e controle quem pode entrar no sistema</div>
           </div>
         </div>
 
@@ -1744,6 +1744,35 @@
 
   var CHAVE_EQUIPE = 'iloveaudaz_equipe';
 
+  // ---- Equipe na nuvem (Firebase Realtime Database via API REST) ----
+  // Preencha com o endereco do banco, ex.: 'https://SEUPROJETO-default-rtdb.firebaseio.com'
+  // Enquanto estiver vazio, o sistema funciona apenas com os cadastros locais.
+  var NUVEM_URL = '';
+
+  function nuvemAtiva(){ return !!NUVEM_URL; }
+
+  function baixarEquipeNuvem(){
+    if(!nuvemAtiva()) return Promise.resolve(null);
+    var alvo = NUVEM_URL.replace(/\/$/,'') + '/equipe.json';
+    var expira = new Promise(function(res){ setTimeout(function(){ res('timeout'); }, 5000); });
+    return Promise.race([fetch(alvo).then(function(r){ return r.json(); }), expira])
+      .then(function(dados){
+        if(dados === 'timeout' || dados == null) return null;
+        return Array.isArray(dados) ? dados : [];
+      })
+      .catch(function(){ return null; });
+  }
+
+  function enviarEquipeNuvem(lista){
+    if(!nuvemAtiva()) return Promise.resolve(false);
+    var alvo = NUVEM_URL.replace(/\/$/,'') + '/equipe.json';
+    return fetch(alvo, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lista)
+    }).then(function(r){ return r.ok; }).catch(function(){ return false; });
+  }
+
   function lerEquipeLocal(){
     try{
       var v = JSON.parse(localStorage.getItem(CHAVE_EQUIPE));
@@ -1763,7 +1792,13 @@
     salvar: gravarEquipeLocal,
     fixos: function(){ return USUARIOS.slice(); },
     todos: todosUsuarios,
-    hashSenha: function(txt){ return sha256(utf8(txt)); }
+    hashSenha: function(txt){ return sha256(utf8(txt)); },
+    nuvemAtiva: nuvemAtiva,
+    // grava local e, se a nuvem estiver ligada, publica para toda a equipe
+    publicar: function(lista){
+      gravarEquipeLocal(lista);
+      return enviarEquipeNuvem(lista);
+    }
   };
 
   function lerSessao(){
@@ -1787,6 +1822,15 @@
   var campo = document.getElementById('gatePass');
   var erro = document.getElementById('gateErr');
 
+  function bloquearAgora(){
+    try{ localStorage.removeItem(CHAVE); }catch(e){}
+    window.usuarioLogado = null;
+    gate.style.display = 'flex';
+    document.body.classList.add('locked');
+    erro.style.color = '';
+    erro.textContent = 'Este acesso foi desativado.';
+  }
+
   function liberar(){
     gate.style.display = 'none';
     document.body.classList.remove('locked');
@@ -1803,6 +1847,19 @@
     return false;
   }
 
+  // Busca a equipe na nuvem em paralelo. Se falhar (sem internet), segue com o
+  // que estiver salvo neste computador, para nao travar o acesso.
+  var sincronizando = baixarEquipeNuvem().then(function(remota){
+    if(remota){
+      gravarEquipeLocal(remota);
+      // A sessao foi liberada com o cache antigo. Agora que a lista chegou da
+      // nuvem, revalida: quem foi desativado por outro computador cai fora.
+      var s = lerSessao();
+      if(s && s.usuario && !usuarioValido(s.usuario)) bloquearAgora();
+    }
+    return remota;
+  });
+
   var sessao = lerSessao();
   if(sessao && sessao.ate && Date.now() < sessao.ate && usuarioValido(sessao.usuario)){
     window.usuarioLogado = sessao;
@@ -1814,6 +1871,15 @@
   }
 
   function tentar(){
+    if(nuvemAtiva()){
+      erro.textContent = 'Verificando...';
+      sincronizando.then(function(){ erro.textContent = ''; conferir(); });
+      return;
+    }
+    conferir();
+  }
+
+  function conferir(){
     var login = (campoUser.value || '').trim().toLowerCase();
     var hash = sha256(utf8(campo.value));
     var lista = todosUsuarios();
@@ -4128,6 +4194,12 @@ render();
   }
 
   function renderUsuarios(){
+    const modo = document.getElementById('uModo');
+    if(modo && window.equipeLocal){
+      modo.textContent = window.equipeLocal.nuvemAtiva()
+        ? 'Cadastre a equipe — quem você cadastrar já entra direto, em qualquer computador.'
+        : 'Cadastre a equipe e controle quem pode entrar no sistema';
+    }
     const host = document.getElementById('uLista');
     if(!host || !window.equipeLocal) return;
     const fixos = window.equipeLocal.fixos();
@@ -4152,12 +4224,12 @@ render();
         if(!lista[i]) return;
         if(btn.dataset.acao === 'toggle'){
           lista[i].ativo = lista[i].ativo === false;
-          window.equipeLocal.salvar(lista);
+          window.equipeLocal.publicar(lista);
           renderUsuarios();
         } else if(btn.dataset.acao === 'remover'){
           if(!confirm('Remover ' + lista[i].nome + ' definitivamente?')) return;
           lista.splice(i,1);
-          window.equipeLocal.salvar(lista);
+          window.equipeLocal.publicar(lista);
           renderUsuarios();
         } else if(btn.dataset.acao === 'codigo'){
           copiarCodigo(lista[i]);
@@ -4173,8 +4245,9 @@ render();
       : (inativo
           ? '<span style="font-size:10.5px; color:#b23b3b; font-weight:700;">desativado</span>'
           : '<span style="font-size:10.5px; color:#3f6b4a; font-weight:700;">ativo</span>');
+    const naNuvem = window.equipeLocal && window.equipeLocal.nuvemAtiva && window.equipeLocal.nuvemAtiva();
     const acoes = fixo ? '' : `
-      <button type="button" class="btn-ghost" data-acao="codigo" data-idx="${idx}" style="padding:6px 10px; font-size:11.5px;">Copiar código</button>
+      ${naNuvem ? '' : `<button type="button" class="btn-ghost" data-acao="codigo" data-idx="${idx}" style="padding:6px 10px; font-size:11.5px;">Copiar código</button>`}
       <button type="button" class="btn-ghost" data-acao="toggle" data-idx="${idx}" style="padding:6px 10px; font-size:11.5px;">${inativo ? 'Reativar' : 'Desativar'}</button>
       <button type="button" class="btn-ghost" data-acao="remover" data-idx="${idx}" style="padding:6px 10px; font-size:11.5px; color:#b23b3b;">Remover</button>`;
     return `<div class="doc-row" style="${inativo ? 'opacity:.6;' : ''}">
@@ -4220,15 +4293,28 @@ render();
 
       const lista = window.equipeLocal.listar();
       lista.push({ usuario: login, nome, cargo, ativo: true, hash: window.equipeLocal.hashSenha(senha) });
-      window.equipeLocal.salvar(lista);
 
-      document.getElementById('uNome').value = '';
-      document.getElementById('uCargo').value = '';
-      document.getElementById('uLogin').value = '';
-      document.getElementById('uSenha').value = '';
+      const naNuvem = window.equipeLocal.nuvemAtiva();
       msg.classList.remove('error');
-      msg.textContent = nome + ' cadastrado(a). Clique em "Copiar código" e envie para a pessoa.';
-      renderUsuarios();
+      msg.textContent = naNuvem ? 'Publicando...' : '';
+
+      Promise.resolve(window.equipeLocal.publicar(lista)).then(publicou=>{
+        document.getElementById('uNome').value = '';
+        document.getElementById('uCargo').value = '';
+        document.getElementById('uLogin').value = '';
+        document.getElementById('uSenha').value = '';
+        if(naNuvem && publicou){
+          msg.classList.remove('error');
+          msg.textContent = nome + ' cadastrado(a). Já pode entrar com o usuário e a senha, em qualquer computador.';
+        } else if(naNuvem && !publicou){
+          msg.classList.add('error');
+          msg.textContent = 'Cadastrado neste computador, mas não consegui publicar na nuvem. Verifique a internet e tente novamente.';
+        } else {
+          msg.classList.remove('error');
+          msg.textContent = nome + ' cadastrado(a). Clique em "Copiar código" e envie para a pessoa.';
+        }
+        renderUsuarios();
+      });
     });
   }
 
