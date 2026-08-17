@@ -593,6 +593,11 @@
     <input type="password" id="gatePass" placeholder="senha" autocomplete="current-password">
     <button type="button" class="gate-btn" id="gateBtn">Entrar</button>
     <div class="gate-err" id="gateErr"></div>
+    <button type="button" id="gateCodeToggle" style="background:none;border:none;color:var(--gold-deep);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;margin-top:6px;">Recebi um código de acesso</button>
+    <div id="gateCodeWrap" style="display:none; margin-top:10px;">
+      <input type="text" id="gateCode" placeholder="cole o código aqui" style="letter-spacing:normal; font-size:12.5px;">
+      <button type="button" class="gate-btn" id="gateCodeBtn" style="margin-top:8px;">Ativar meu acesso</button>
+    </div>
     <div class="gate-foot">Seus dados continuam apenas neste computador.</div>
   </div>
 </div>
@@ -619,6 +624,10 @@
       <button type="button" class="side-link" data-page="documentos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         Meus Documentos
+      </button>
+      <button type="button" class="side-link" data-page="usuarios" id="navUsuarios" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M17 11h4M19 9v4"/></svg>
+        Usuários
       </button>
       <button type="button" class="side-link" data-page="favoritos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l3.09 6.26L22 9.77l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.64l-5-4.87 6.91-1.01z"/></svg>
@@ -1567,6 +1576,48 @@
         </div>
       </section>
 
+      <section class="page" id="page-usuarios">
+        <div class="page-head">
+          <div>
+            <div class="page-head-title">Usuários</div>
+            <div class="page-head-sub">Cadastre a equipe e controle quem pode entrar no sistema</div>
+          </div>
+        </div>
+
+        <div class="side-card" style="max-width:560px; margin-bottom:22px;">
+          <div class="side-card-head"><span>Cadastrar nova pessoa</span></div>
+          <div class="row2">
+            <div class="field">
+              <label for="uNome">Nome completo</label>
+              <input type="text" id="uNome" placeholder="Nome da pessoa">
+            </div>
+            <div class="field">
+              <label for="uCargo">Cargo</label>
+              <input type="text" id="uCargo" placeholder="Ex.: Corretor(a)">
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="uLogin">Usuário (login)</label>
+              <input type="text" id="uLogin" placeholder="nome.sobrenome">
+            </div>
+            <div class="field">
+              <label for="uSenha">Senha</label>
+              <input type="text" id="uSenha" placeholder="senha de acesso">
+            </div>
+          </div>
+          <div class="pdf-toolbar" style="margin-top:6px;">
+            <button type="button" class="btn-primary" id="uAdd">+ Cadastrar pessoa</button>
+          </div>
+          <div class="pdf-status" id="uMsg"></div>
+        </div>
+
+        <div class="side-card" style="max-width:560px;">
+          <div class="side-card-head"><span>Equipe</span></div>
+          <div id="uLista"></div>
+        </div>
+      </section>
+
       <section class="page" id="page-favoritos">
         <div class="page-head">
           <div>
@@ -1626,7 +1677,7 @@
   // Equipe autorizada. 'ativo:false' bloqueia o acesso sem apagar o registro.
   // A senha nunca fica escrita aqui, apenas o hash SHA-256 dela.
   var USUARIOS = [
-    { usuario: 'sadraque.ribeiro', nome: 'Sadraque Ribeiro', cargo: 'Diretor', ativo: true,
+    { usuario: 'sadraque.ribeiro', nome: 'Sadraque Ribeiro', cargo: 'Diretor', ativo: true, admin: true,
       hash: '921a82bd68b5f65cedc9edfb7cc417ed0c315c4f431daf3456d528a14c1c8558' }
   ];
   var DIAS_DE_SESSAO = 30;
@@ -1691,6 +1742,30 @@
     return result;
   }
 
+  var CHAVE_EQUIPE = 'iloveaudaz_equipe';
+
+  function lerEquipeLocal(){
+    try{
+      var v = JSON.parse(localStorage.getItem(CHAVE_EQUIPE));
+      return Array.isArray(v) ? v : [];
+    }catch(e){ return []; }
+  }
+  function gravarEquipeLocal(lista){
+    try{ localStorage.setItem(CHAVE_EQUIPE, JSON.stringify(lista)); }catch(e){}
+  }
+  // usuarios do arquivo + usuarios cadastrados neste computador
+  function todosUsuarios(){
+    return USUARIOS.concat(lerEquipeLocal());
+  }
+
+  window.equipeLocal = {
+    listar: lerEquipeLocal,
+    salvar: gravarEquipeLocal,
+    fixos: function(){ return USUARIOS.slice(); },
+    todos: todosUsuarios,
+    hashSenha: function(txt){ return sha256(utf8(txt)); }
+  };
+
   function lerSessao(){
     try{ return JSON.parse(localStorage.getItem(CHAVE)); }catch(e){ return null; }
   }
@@ -1698,7 +1773,7 @@
     try{
       localStorage.setItem(CHAVE, JSON.stringify({
         ate: Date.now() + DIAS_DE_SESSAO*86400000,
-        usuario: u.usuario, nome: u.nome, cargo: u.cargo
+        usuario: u.usuario, nome: u.nome, cargo: u.cargo, admin: !!u.admin
       }));
     }catch(e){}
   }
@@ -1717,11 +1792,13 @@
     document.body.classList.remove('locked');
     // o perfil do topo e montado antes do login, entao precisa ser refeito
     if(typeof window.renderProfile === 'function') window.renderProfile();
+    if(typeof window.aplicarPermissoes === 'function') window.aplicarPermissoes();
   }
 
   function usuarioValido(login){
-    for(var i = 0; i < USUARIOS.length; i++){
-      if(USUARIOS[i].usuario === login) return USUARIOS[i].ativo !== false;
+    var lista = todosUsuarios();
+    for(var i = 0; i < lista.length; i++){
+      if(lista[i].usuario === login) return lista[i].ativo !== false;
     }
     return false;
   }
@@ -1739,10 +1816,11 @@
   function tentar(){
     var login = (campoUser.value || '').trim().toLowerCase();
     var hash = sha256(utf8(campo.value));
+    var lista = todosUsuarios();
     var encontrado = null;
-    for(var i = 0; i < USUARIOS.length; i++){
-      if(USUARIOS[i].usuario.toLowerCase() === login && USUARIOS[i].hash === hash){
-        encontrado = USUARIOS[i];
+    for(var i = 0; i < lista.length; i++){
+      if(lista[i].usuario.toLowerCase() === login && lista[i].hash === hash){
+        encontrado = lista[i];
         break;
       }
     }
@@ -1754,6 +1832,7 @@
     if(encontrado){
       gravarSessao(encontrado);
       window.usuarioLogado = encontrado;
+      if(encontrado.admin) window.usuarioLogado.admin = true;
       liberar();
     } else {
       erro.textContent = 'Usuário ou senha incorretos.';
@@ -1761,6 +1840,37 @@
       campo.focus();
     }
   }
+
+  // Ativacao por codigo: o diretor cadastra a pessoa e envia um codigo; a pessoa
+  // cola aqui uma vez e passa a entrar normalmente neste computador.
+  document.getElementById('gateCodeToggle').addEventListener('click', function(){
+    var w = document.getElementById('gateCodeWrap');
+    var aberto = w.style.display !== 'none';
+    w.style.display = aberto ? 'none' : 'block';
+    if(!aberto) document.getElementById('gateCode').focus();
+  });
+
+  document.getElementById('gateCodeBtn').addEventListener('click', function(){
+    var txt = (document.getElementById('gateCode').value || '').trim();
+    if(!txt){ erro.textContent = 'Cole o código que você recebeu.'; return; }
+    var novo;
+    try{
+      novo = JSON.parse(decodeURIComponent(escape(atob(txt))));
+    }catch(e){ novo = null; }
+    if(!novo || !novo.usuario || !novo.hash){
+      erro.textContent = 'Código inválido.';
+      return;
+    }
+    var lista = lerEquipeLocal().filter(function(u){ return u.usuario !== novo.usuario; });
+    lista.push(novo);
+    gravarEquipeLocal(lista);
+    erro.style.color = '#3f6b4a';
+    erro.textContent = 'Acesso ativado! Agora entre com seu usuário e senha.';
+    document.getElementById('gateCodeWrap').style.display = 'none';
+    document.getElementById('gateCode').value = '';
+    campoUser.value = novo.usuario;
+    campo.focus();
+  });
 
   document.getElementById('gateBtn').addEventListener('click', tentar);
   campo.addEventListener('keydown', function(e){ if(e.key === 'Enter') tentar(); });
@@ -3703,8 +3813,8 @@ render();
   }
 
   // ---------- page navigation ----------
-  const PAGES = ['inicio','declaracoes','pdftools','documentos','favoritos'];
-  const PAGE_TITLES = { inicio:'Central de Documentos', declaracoes:'Declarações', pdftools:'Ferramentas PDF', documentos:'Meus Documentos', favoritos:'Modelos Favoritos' };
+  const PAGES = ['inicio','declaracoes','pdftools','documentos','favoritos','usuarios'];
+  const PAGE_TITLES = { inicio:'Central de Documentos', declaracoes:'Declarações', pdftools:'Ferramentas PDF', documentos:'Meus Documentos', favoritos:'Modelos Favoritos', usuarios:'Usuários' };
 
   function goToPage(page){
     PAGES.forEach(p=>{
@@ -3717,6 +3827,7 @@ render();
     document.getElementById('topbarTitle').textContent = PAGE_TITLES[page] || 'Central de Documentos';
     closeSidebarMobile();
     if(page === 'favoritos') renderFavoritosPage();
+    if(page === 'usuarios') renderUsuarios();
     if(page === 'documentos') renderDocTable();
     window.scrollTo(0,0);
   }
@@ -4011,7 +4122,124 @@ render();
     }
   });
 
+  // ---------- usuários (somente diretor) ----------
+  function ehAdmin(){
+    return !!(window.usuarioLogado && window.usuarioLogado.admin);
+  }
+
+  function renderUsuarios(){
+    const host = document.getElementById('uLista');
+    if(!host || !window.equipeLocal) return;
+    const fixos = window.equipeLocal.fixos();
+    const locais = window.equipeLocal.listar();
+
+    let html = '';
+    fixos.forEach(u=>{
+      html += linhaUsuario(u, true);
+    });
+    if(locais.length === 0 && fixos.length){
+      html += '<div class="recent-empty">Nenhuma pessoa cadastrada por você ainda.</div>';
+    }
+    locais.forEach((u,i)=>{
+      html += linhaUsuario(u, false, i);
+    });
+    host.innerHTML = html;
+
+    host.querySelectorAll('[data-acao]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const i = parseInt(btn.dataset.idx, 10);
+        const lista = window.equipeLocal.listar();
+        if(!lista[i]) return;
+        if(btn.dataset.acao === 'toggle'){
+          lista[i].ativo = lista[i].ativo === false;
+          window.equipeLocal.salvar(lista);
+          renderUsuarios();
+        } else if(btn.dataset.acao === 'remover'){
+          if(!confirm('Remover ' + lista[i].nome + ' definitivamente?')) return;
+          lista.splice(i,1);
+          window.equipeLocal.salvar(lista);
+          renderUsuarios();
+        } else if(btn.dataset.acao === 'codigo'){
+          copiarCodigo(lista[i]);
+        }
+      });
+    });
+  }
+
+  function linhaUsuario(u, fixo, idx){
+    const inativo = u.ativo === false;
+    const badge = fixo
+      ? '<span style="font-size:10.5px; color:#8a8578;">no sistema</span>'
+      : (inativo
+          ? '<span style="font-size:10.5px; color:#b23b3b; font-weight:700;">desativado</span>'
+          : '<span style="font-size:10.5px; color:#3f6b4a; font-weight:700;">ativo</span>');
+    const acoes = fixo ? '' : `
+      <button type="button" class="btn-ghost" data-acao="codigo" data-idx="${idx}" style="padding:6px 10px; font-size:11.5px;">Copiar código</button>
+      <button type="button" class="btn-ghost" data-acao="toggle" data-idx="${idx}" style="padding:6px 10px; font-size:11.5px;">${inativo ? 'Reativar' : 'Desativar'}</button>
+      <button type="button" class="btn-ghost" data-acao="remover" data-idx="${idx}" style="padding:6px 10px; font-size:11.5px; color:#b23b3b;">Remover</button>`;
+    return `<div class="doc-row" style="${inativo ? 'opacity:.6;' : ''}">
+      <div class="recent-icon">${iconSvg('people')}</div>
+      <div style="flex:1; min-width:0;">
+        <div class="doc-title">${escapeHtmlLocal(u.nome)} ${badge}</div>
+        <div class="doc-sub2">${escapeHtmlLocal(u.usuario)}${u.cargo ? ' · ' + escapeHtmlLocal(u.cargo) : ''}</div>
+      </div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">${acoes}</div>
+    </div>`;
+  }
+
+  function copiarCodigo(u){
+    const codigo = btoa(unescape(encodeURIComponent(JSON.stringify({
+      usuario: u.usuario, nome: u.nome, cargo: u.cargo, ativo: true, hash: u.hash
+    }))));
+    const texto = 'Seu acesso ao sistema iLove Audaz:\n\nUsuário: ' + u.usuario +
+      '\n\n1) Abra o sistema\n2) Clique em "Recebi um código de acesso"\n3) Cole o código abaixo:\n\n' + codigo;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(texto).then(()=> alert('Código copiado! Cole no WhatsApp da pessoa.'),
+        ()=> prompt('Copie o código abaixo:', texto));
+    } else {
+      prompt('Copie o código abaixo:', texto);
+    }
+  }
+
+  const addBtn = document.getElementById('uAdd');
+  if(addBtn){
+    addBtn.addEventListener('click', ()=>{
+      const msg = document.getElementById('uMsg');
+      const nome = document.getElementById('uNome').value.trim();
+      const cargo = document.getElementById('uCargo').value.trim();
+      const login = document.getElementById('uLogin').value.trim().toLowerCase();
+      const senha = document.getElementById('uSenha').value;
+      msg.classList.add('error');
+
+      if(!nome || !login || !senha){ msg.textContent = 'Preencha nome, usuário e senha.'; return; }
+      if(/\s/.test(login)){ msg.textContent = 'O usuário não pode ter espaços. Use algo como nome.sobrenome'; return; }
+      if(senha.length < 4){ msg.textContent = 'A senha precisa ter pelo menos 4 caracteres.'; return; }
+
+      const jaExiste = window.equipeLocal.todos().some(u=> u.usuario.toLowerCase() === login);
+      if(jaExiste){ msg.textContent = 'Já existe alguém com esse usuário.'; return; }
+
+      const lista = window.equipeLocal.listar();
+      lista.push({ usuario: login, nome, cargo, ativo: true, hash: window.equipeLocal.hashSenha(senha) });
+      window.equipeLocal.salvar(lista);
+
+      document.getElementById('uNome').value = '';
+      document.getElementById('uCargo').value = '';
+      document.getElementById('uLogin').value = '';
+      document.getElementById('uSenha').value = '';
+      msg.classList.remove('error');
+      msg.textContent = nome + ' cadastrado(a). Clique em "Copiar código" e envie para a pessoa.';
+      renderUsuarios();
+    });
+  }
+
+  // O menu depende de quem entrou, e o login acontece depois deste script rodar.
+  window.aplicarPermissoes = function(){
+    const nav = document.getElementById('navUsuarios');
+    if(nav) nav.style.display = ehAdmin() ? 'flex' : 'none';
+  };
+
   // ---------- init ----------
+  window.aplicarPermissoes();
   renderCatalogGrids();
   renderRecent();
   renderProfile();
