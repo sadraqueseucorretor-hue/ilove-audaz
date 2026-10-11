@@ -4478,8 +4478,11 @@ render();
     var tarefa = item.tipo === 'pdf'
       ? item.file.arrayBuffer().then(function(buf){
           return PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false }).then(function(doc){
-            if(doc.isEncrypted) throw new ErroArquivo('O arquivo "' + item.file.name + '" está protegido por senha. Use a ferramenta "Desbloquear PDF" e adicione a cópia desbloqueada.');
-            item.paginas = doc.getPageCount();
+            if(!doc.isEncrypted){ item.paginas = doc.getPageCount(); item.travado = false; return; }
+            return abrirTravado(item, buf).then(function(pdf){
+              item.paginas = pdf.numPages; item.travado = true;
+              pdf.destroy();
+            });
           });
         })
       : decodificarImagem(item.file).then(function(bmp){ item.paginas = 1; fecharBitmap(bmp); });
@@ -4492,6 +4495,54 @@ render();
   }
 
   function ErroArquivo(msg){ this.message = msg; }
+
+  // PDFs de órgãos públicos (CTPS Digital, extratos, etc.) costumam vir com trava
+  // contra edição: abrem sem senha, mas o conteúdo é criptografado. O pdf.js
+  // consegue lê-los; só pedimos senha quando o arquivo realmente exige uma para abrir.
+  function abrirTravado(item, buf){
+    return pdfjsLib.getDocument({ data: new Uint8Array(buf.slice(0)), password: '' }).promise.catch(function(err){
+      if(err && err.name === 'PasswordException'){
+        throw new ErroArquivo('O arquivo "' + item.file.name + '" pede senha para abrir. Use a ferramenta "Desbloquear PDF" com a senha e adicione a cópia desbloqueada.');
+      }
+      throw err;
+    });
+  }
+
+  // Cada página do PDF travado vira uma imagem de alta resolução (200 dpi) no PDF final.
+  function anexarTravado(doc, item, buf){
+    return abrirTravado(item, buf).then(function(pdf){
+      var n = 0;
+      function proxima(){
+        if(n >= pdf.numPages){ pdf.destroy(); return n; }
+        n++;
+        return pdf.getPage(n).then(function(page){
+          var base = page.getViewport({ scale: 1 });
+          var escala = Math.min(200 / 72, Math.sqrt(16e6 / (base.width * base.height)));
+          var vp = page.getViewport({ scale: escala });
+          var canvas = document.createElement('canvas');
+          canvas.width = Math.ceil(vp.width); canvas.height = Math.ceil(vp.height);
+          var ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          return page.render({ canvasContext: ctx, viewport: vp }).promise.then(function(){
+            return new Promise(function(resolve, reject){
+              canvas.toBlob(function(b){ b ? resolve(b) : reject(new Error('canvas')); }, 'image/jpeg', 0.92);
+            });
+          }).then(function(b){
+            canvas.width = canvas.height = 0;
+            page.cleanup();
+            return b.arrayBuffer();
+          }).then(function(jpg){
+            return doc.embedJpg(jpg);
+          }).then(function(img){
+            var pg = doc.addPage([base.width, base.height]);
+            pg.drawImage(img, { x: 0, y: 0, width: base.width, height: base.height });
+          });
+        }).then(proxima);
+      }
+      return proxima();
+    });
+  }
   function mensagemErro(item, err){
     if(err instanceof ErroArquivo) return err.message;
     return 'Não foi possível processar "' + item.file.name + '". Verifique o arquivo e tente novamente.';
@@ -4529,6 +4580,7 @@ render();
         '<span class="org-pos">' + (idx + 1) + '</span>' +
         '<span class="org-name" title="' + esc(item.file.name) + '">' + esc(item.file.name) + '</span></div>' +
       (item.estado === 'erro' ? '<div class="org-err">' + esc(item.erro) + '</div>' : '') +
+      (item.estado === 'ok' && item.travado ? '<div class="org-meta" style="white-space:normal; font-family:Inter,sans-serif;">PDF com trava de edição: as páginas entram como imagem em alta qualidade.</div>' : '') +
       '<div class="org-row-bottom">' +
         '<span class="org-badge ' + (item.tipo === 'pdf' ? 'pdf' : 'img') + '">' + rotuloTipo(item) + '</span>' +
         '<span class="org-meta">' + meta + '</span>' +
@@ -4610,7 +4662,7 @@ render();
       if(!tipo){ msgLote(item.lote, '"' + file.name + '" não é um formato aceito.'); return; }
       if(file.size > MAX_ARQUIVO){ msgLote(item.lote, '"' + file.name + '" tem ' + fmtBytes(file.size) + '. O limite é 50 MB por arquivo.'); return; }
       msgLote(item.lote, '');
-      item.file = file; item.tipo = tipo; item.paginas = null; item.estado = 'verificando'; item.erro = '';
+      item.file = file; item.tipo = tipo; item.paginas = null; item.travado = false; item.estado = 'verificando'; item.erro = '';
       alterou();
       verificarFila([item]);
     });
@@ -4751,13 +4803,13 @@ render();
 
   function anexarPdf(doc, item){
     return item.file.arrayBuffer().then(function(buf){
-      return PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false });
-    }).then(function(src){
-      if(src.isEncrypted) throw new ErroArquivo('O arquivo "' + item.file.name + '" está protegido por senha. Use a ferramenta "Desbloquear PDF" e adicione a cópia desbloqueada.');
-      return doc.copyPages(src, src.getPageIndices());
-    }).then(function(paginas){
-      paginas.forEach(function(p){ doc.addPage(p); });
-      return paginas.length;
+      return PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false }).then(function(src){
+        if(src.isEncrypted) return anexarTravado(doc, item, buf);
+        return doc.copyPages(src, src.getPageIndices()).then(function(paginas){
+          paginas.forEach(function(p){ doc.addPage(p); });
+          return paginas.length;
+        });
+      });
     });
   }
 
