@@ -307,8 +307,7 @@
   .hero-lion{ width:200px; height:auto; opacity:0.9; flex-shrink:0; filter:drop-shadow(0 8px 24px rgba(0,0,0,0.4)); }
   @media (max-width:920px){ .hero-lion{ display:none; } .hero{ padding:28px; } }
 
-  .cta-row{ display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:28px; }
-  @media (max-width:1180px){ .cta-row{ grid-template-columns:1fr 1fr; } .cta-row .cta-card:last-child{ grid-column:1 / -1; } }
+  .cta-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px; }
   @media (max-width:760px){ .cta-row{ grid-template-columns:1fr; } }
   .cta-card{
     display:flex; align-items:center; gap:16px; text-align:left; border:1px solid var(--line);
@@ -318,7 +317,38 @@
   .cta-card:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(0,0,0,0.08); }
   .cta-cream{ background:#fdf3e0; }
   .cta-blue{ background:#eef2fc; }
-  .cta-green{ background:#e9f3ec; }
+  .cta-feature{
+    grid-column:1 / -1; position:relative; overflow:hidden;
+    background:linear-gradient(120deg, var(--navy) 0%, var(--navy-3) 100%); border-color:var(--navy-3);
+    padding:22px 26px; gap:22px;
+  }
+  .cta-feature::after{
+    content:''; position:absolute; right:-60px; top:-60px; width:220px; height:220px; border-radius:50%;
+    background:radial-gradient(circle, rgba(240,168,58,0.22) 0%, rgba(240,168,58,0) 70%); pointer-events:none;
+  }
+  .cta-feature:hover{ box-shadow:0 14px 34px rgba(16,28,63,0.35); }
+  .cta-feature-logo{
+    width:150px; height:76px; border-radius:14px; background:#fff; flex-shrink:0; padding:10px 14px;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,0.25); color:var(--gold-deep);
+  }
+  .cta-feature-logo img{ display:block; max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; }
+  .cta-feature-logo svg{ width:30px; height:30px; }
+  .cta-feature .cta-kicker{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin-bottom:4px; }
+  .cta-feature .cta-title{ color:#fff; font-size:21px; }
+  .cta-feature .cta-sub{ color:var(--muted-on-navy); font-size:13px; margin-top:4px; }
+  .cta-feature-steps{ display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .cta-feature-steps span{ font-size:11px; font-weight:600; color:var(--ink-on-navy); background:rgba(255,255,255,0.08); border:1px solid var(--navy-line); border-radius:999px; padding:4px 10px; }
+  .cta-feature-btn{
+    flex-shrink:0; display:inline-flex; align-items:center; gap:8px; background:linear-gradient(180deg, var(--gold), var(--gold-deep));
+    color:#1a1205; font-weight:800; font-size:13px; letter-spacing:0.02em; border-radius:10px; padding:13px 18px; position:relative; z-index:1;
+    box-shadow:0 8px 20px rgba(240,168,58,0.3);
+  }
+  .cta-feature-btn svg{ width:16px; height:16px; }
+  @media (max-width:760px){
+    .cta-feature{ flex-wrap:wrap; padding:20px; gap:16px; }
+    .cta-feature-logo{ width:120px; height:62px; }
+    .cta-feature-btn{ width:100%; justify-content:center; }
+  }
   .cta-icon{
     width:48px; height:48px; border-radius:12px; background:#fff; flex-shrink:0;
     display:flex; align-items:center; justify-content:center; color:var(--gold-deep);
@@ -833,6 +863,18 @@
         </div>
 
         <div class="cta-row">
+          <button type="button" class="cta-card cta-feature" data-page="organizacao">
+            <div class="cta-feature-logo" id="homeDirecionalLogo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1.2"/><rect x="3" y="11" width="18" height="4" rx="1.2"/><rect x="3" y="17" width="18" height="4" rx="1.2"/></svg>
+            </div>
+            <div class="cta-text">
+              <div class="cta-kicker">Direcional</div>
+              <div class="cta-title">Organizar documentos</div>
+              <div class="cta-sub">Arraste os documentos do cliente e receba os 3 PDFs prontos para enviar.</div>
+              <div class="cta-feature-steps"><span>01 Pessoais</span><span>02 Financeiros</span><span>03 Complementares</span></div>
+            </div>
+            <span class="cta-feature-btn">Organizar agora <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </button>
           <button type="button" class="cta-card cta-cream" data-page="declaracoes">
             <div class="cta-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M12 12v6M9 15h6"/></svg>
@@ -850,16 +892,6 @@
             <div class="cta-text">
               <div class="cta-title">Ferramentas PDF</div>
               <div class="cta-sub">Edite, una, comprima e organize seus arquivos</div>
-            </div>
-            <svg class="cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-          </button>
-          <button type="button" class="cta-card cta-green" data-page="organizacao">
-            <div class="cta-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1.2"/><rect x="3" y="11" width="18" height="4" rx="1.2"/><rect x="3" y="17" width="18" height="4" rx="1.2"/></svg>
-            </div>
-            <div class="cta-text">
-              <div class="cta-title">Organizar documentos</div>
-              <div class="cta-sub">Direcional: separe em 3 lotes e gere os PDFs</div>
             </div>
             <svg class="cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
           </button>
@@ -5055,6 +5087,25 @@ render();
   }
   document.addEventListener('audaz:logos', renderLogo);
   window.renderOrgLogo = renderLogo;
+
+  // Card de destaque na tela inicial: usa a mesma logo cadastrada pelo ADM
+  var iconeHome = $('homeDirecionalLogo') ? $('homeDirecionalLogo').innerHTML : '';
+  function renderLogoHome(){
+    var box = $('homeDirecionalLogo');
+    if(!box) return;
+    var logo = window.AudazLogos && window.AudazLogos.obter('direcional');
+    if(logo){
+      box.innerHTML = '';
+      var img = document.createElement('img');
+      img.alt = 'Direcional';
+      img.src = logo.dataUrl;
+      box.appendChild(img);
+    } else {
+      box.innerHTML = iconeHome;
+    }
+  }
+  document.addEventListener('audaz:logos', renderLogoHome);
+  renderLogoHome();
 
   renderLogo();
   render();
