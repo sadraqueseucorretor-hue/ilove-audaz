@@ -307,7 +307,8 @@
   .hero-lion{ width:200px; height:auto; opacity:0.9; flex-shrink:0; filter:drop-shadow(0 8px 24px rgba(0,0,0,0.4)); }
   @media (max-width:920px){ .hero-lion{ display:none; } .hero{ padding:28px; } }
 
-  .cta-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px; }
+  .cta-row{ display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:28px; }
+  @media (max-width:1180px){ .cta-row{ grid-template-columns:1fr 1fr; } .cta-row .cta-card:last-child{ grid-column:1 / -1; } }
   @media (max-width:760px){ .cta-row{ grid-template-columns:1fr; } }
   .cta-card{
     display:flex; align-items:center; gap:16px; text-align:left; border:1px solid var(--line);
@@ -317,6 +318,7 @@
   .cta-card:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(0,0,0,0.08); }
   .cta-cream{ background:#fdf3e0; }
   .cta-blue{ background:#eef2fc; }
+  .cta-green{ background:#e9f3ec; }
   .cta-icon{
     width:48px; height:48px; border-radius:12px; background:#fff; flex-shrink:0;
     display:flex; align-items:center; justify-content:center; color:var(--gold-deep);
@@ -848,6 +850,16 @@
             <div class="cta-text">
               <div class="cta-title">Ferramentas PDF</div>
               <div class="cta-sub">Edite, una, comprima e organize seus arquivos</div>
+            </div>
+            <svg class="cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="cta-card cta-green" data-page="organizacao">
+            <div class="cta-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1.2"/><rect x="3" y="11" width="18" height="4" rx="1.2"/><rect x="3" y="17" width="18" height="4" rx="1.2"/></svg>
+            </div>
+            <div class="cta-text">
+              <div class="cta-title">Organizar documentos</div>
+              <div class="cta-sub">Direcional: separe em 3 lotes e gere os PDFs</div>
             </div>
             <svg class="cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
           </button>
