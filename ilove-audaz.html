@@ -542,6 +542,168 @@
     .pdf-tools-wrap{ padding:28px 20px 40px; }
   }
 
+  /* ===== ORGANIZAÇÃO DE DOCUMENTOS — DIRECIONAL ===== */
+  .org-wrap{ max-width:1320px; }
+  .org-hero{
+    display:flex; align-items:center; gap:22px; flex-wrap:wrap; background:#fff; border:1px solid var(--line);
+    border-radius:16px; padding:20px 24px; margin-bottom:18px;
+  }
+  .org-logo{ display:flex; align-items:center; justify-content:center; min-width:0; }
+  .org-logo img{ display:block; max-height:58px; max-width:210px; width:auto; height:auto; object-fit:contain; }
+  .org-logo-missing{ font-size:11.5px; color:#a29c8c; border:1px dashed var(--line-strong); border-radius:10px; padding:10px 12px; line-height:1.4; }
+  .org-logo-missing button{ background:none; border:none; padding:0; color:var(--gold-deep); font-size:11.5px; font-weight:600; text-decoration:underline; }
+  .org-head{ flex:1; min-width:220px; }
+  .org-title{ font-family:'Fraunces',serif; font-weight:600; font-size:24px; margin:6px 0 3px; color:var(--ink); }
+  .org-summary{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; font-size:12px; color:#5c584e; max-width:360px; }
+  .org-sum-label{ width:100%; font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.12em; color:#8a8578; text-transform:uppercase; margin-bottom:2px; }
+  .org-chip{ background:var(--paper-dim); border:1px solid var(--line); border-radius:999px; padding:4px 10px; white-space:nowrap; }
+  .org-chip b{ color:var(--ink); }
+  .org-chip.total{ background:var(--ink); border-color:var(--ink); color:var(--gold-glow); }
+  .org-chip.total b{ color:var(--gold-glow); }
+
+  .org-lots{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; align-items:start; }
+  @media (max-width:1180px){ .org-lots{ grid-template-columns:1fr; } }
+  .org-lot{
+    background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px;
+    display:flex; flex-direction:column; gap:12px; transition:border-color .15s, box-shadow .15s; min-width:0;
+  }
+  .org-lot.drop-target{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(240,168,58,0.18); }
+  .org-lot-head{ display:flex; align-items:flex-start; gap:12px; }
+  .org-lot-num{
+    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:500; color:#fff; background:var(--gold-deep);
+    border-radius:7px; padding:5px 7px; line-height:1;
+  }
+  .org-lot-title{ font-family:'Fraunces',serif; font-weight:600; font-size:16px; color:var(--ink); line-height:1.2; }
+  .org-lot-count{ font-size:12px; color:#8a8578; margin-top:3px; }
+  .org-lot-count b{ color:var(--ink); }
+  .org-lot-hint{ font-size:11.5px; color:#a29c8c; line-height:1.45; }
+  .org-drop{
+    border:2px dashed var(--line-strong); border-radius:12px; padding:18px 14px; text-align:center;
+    background:#fffdf9; cursor:pointer; transition:border-color .15s, background .15s;
+  }
+  .org-drop:hover, .org-drop.dragover{ border-color:var(--gold); background:var(--paper-dim); }
+  .org-drop .icon{ color:var(--gold-deep); margin-bottom:6px; }
+  .org-drop .label{ font-weight:600; font-size:13px; color:var(--ink); }
+  .org-drop .hint{ font-size:11px; color:#a29c8c; margin-top:4px; }
+  .org-lot-msg{ font-size:11.5px; color:#b23b3b; line-height:1.4; }
+  .org-lot-msg:empty{ display:none; }
+  .org-list{ display:flex; flex-direction:column; gap:8px; min-height:6px; }
+  .org-row{
+    background:#fffdf9; border:1px solid var(--line); border-radius:10px; padding:9px 10px;
+    display:flex; flex-direction:column; gap:7px; cursor:grab; min-width:0;
+  }
+  .org-row.dragging{ opacity:0.4; }
+  .org-row.error{ border-color:#e3a6a6; background:#fdf3f2; }
+  .org-row-top{ display:flex; align-items:center; gap:8px; min-width:0; }
+  .org-handle{ color:#c2bcac; font-size:14px; flex-shrink:0; }
+  .org-pos{
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:#fff; background:var(--navy-3); border-radius:5px;
+    min-width:20px; height:20px; display:flex; align-items:center; justify-content:center; padding:0 5px; flex-shrink:0;
+  }
+  .org-name{ flex:1; min-width:0; font-size:13px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .org-row-bottom{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .org-badge{
+    font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:500; letter-spacing:0.06em; border-radius:5px;
+    padding:2px 6px; background:var(--paper-dim); color:#5c584e; border:1px solid var(--line);
+  }
+  .org-badge.pdf{ background:#fbeceb; color:var(--red); border-color:#f1d0cd; }
+  .org-badge.img{ background:#eaf0fb; color:var(--navy-3); border-color:#d3dcf0; }
+  .org-meta{ font-size:11px; color:#a29c8c; font-family:'JetBrains Mono',monospace; white-space:nowrap; }
+  .org-actions{ margin-left:auto; display:flex; gap:4px; align-items:center; flex-wrap:wrap; }
+  .org-ibtn{
+    width:30px; height:30px; padding:0; display:inline-flex; align-items:center; justify-content:center;
+    background:#fff; border:1px solid var(--line); border-radius:7px; color:#5c584e; cursor:pointer;
+  }
+  .org-ibtn svg{ width:15px; height:15px; }
+  .org-ibtn:hover{ border-color:var(--gold); color:var(--gold-deep); }
+  .org-ibtn.danger:hover{ border-color:#e3a6a6; color:#b23b3b; background:#fdeceb; }
+  .org-ibtn:disabled{ opacity:0.35; cursor:default; border-color:var(--line); color:#5c584e; }
+  .org-move{
+    height:30px; border:1px solid var(--line); border-radius:7px; background:#fff; font-size:11.5px; font-weight:600;
+    font-family:'Inter',sans-serif; color:#5c584e; padding:0 6px; cursor:pointer; max-width:118px;
+  }
+  .org-replace{
+    height:30px; padding:0 10px; font-size:11.5px; border-radius:7px; background:#b23b3b; color:#fff; border:none;
+  }
+  .org-err{ font-size:11.5px; color:#b23b3b; line-height:1.4; }
+
+  .org-bar{
+    margin-top:18px; background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px 18px;
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  }
+  .org-bar-info{ flex:1; min-width:200px; font-size:12px; color:#8a8578; line-height:1.45; }
+  .org-bar .btn-primary{ flex:0 1 auto; padding:15px 26px; letter-spacing:0.03em; text-transform:uppercase; }
+  .org-bar .btn-primary:disabled{ opacity:0.55; cursor:default; }
+  .org-progress{ margin-top:14px; display:none; }
+  .org-progress.show{ display:block; }
+  .org-progress-text{ font-size:12.5px; color:#5c584e; margin-bottom:8px; font-weight:600; }
+  .org-progress-text.error{ color:#b23b3b; }
+  .org-results{ margin-top:18px; background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px; display:none; }
+  .org-results.show{ display:block; }
+  .org-results-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .org-results-title{ font-family:'Fraunces',serif; font-weight:600; font-size:18px; color:var(--ink); }
+  .org-results-title.ok{ color:var(--ok); }
+  .org-results-head .btn-primary{ flex:0 1 auto; padding:13px 22px; text-transform:uppercase; letter-spacing:0.03em; }
+  .org-result-list{ display:flex; flex-direction:column; gap:10px; }
+  .org-result-row{
+    display:flex; align-items:center; gap:14px; padding:12px 14px; border:1px solid var(--line); border-radius:12px;
+    background:#fffdf9; flex-wrap:wrap;
+  }
+  .org-result-row.muted{ background:var(--paper); color:#a29c8c; font-size:12.5px; }
+  .org-result-row.failed{ border-color:#e3a6a6; background:#fdf3f2; color:#b23b3b; font-size:12.5px; }
+  .org-result-icon{ font-size:22px; line-height:1; }
+  .org-result-info{ flex:1; min-width:180px; }
+  .org-result-info b{ display:block; font-size:13px; color:var(--ink); }
+  .org-result-info span{ font-size:12px; color:#8a8578; font-family:'JetBrains Mono',monospace; }
+  .org-result-row .btn-ghost{ color:var(--ink); padding:10px 16px; font-size:12.5px; }
+  .org-dl-note{ font-size:11.5px; color:#8a8578; margin-top:12px; line-height:1.45; }
+
+  .org-preview-overlay{ padding:4vh 16px; align-items:center; }
+  .org-preview-box{ max-width:960px; max-height:90vh; padding:0; overflow:hidden; }
+  .org-preview-head{ display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); }
+  .org-preview-head .name{ flex:1; min-width:0; font-weight:700; font-size:13.5px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .org-preview-body{ overflow:auto; background:#e9e6de; padding:16px; display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .org-preview-body canvas, .org-preview-body img{ display:block; max-width:100%; height:auto; background:#fff; box-shadow:0 4px 18px rgba(0,0,0,0.18); }
+  .org-preview-note{ font-size:12px; color:#7a756a; }
+
+  /* ADM — identidade visual / logos */
+  .adm-section{ margin-bottom:28px; }
+  .adm-section-title{ font-family:'Fraunces',serif; font-weight:600; font-size:17px; color:var(--ink); }
+  .adm-section-sub{ font-size:12.5px; color:#8a8578; margin:3px 0 14px; }
+  .logo-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:14px; max-width:1040px; }
+  .logo-card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .logo-preview{
+    height:120px; border-radius:10px; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; padding:14px;
+    background-color:#fff; background-image:linear-gradient(45deg,#f3f1ea 25%,transparent 25%,transparent 75%,#f3f1ea 75%),linear-gradient(45deg,#f3f1ea 25%,transparent 25%,transparent 75%,#f3f1ea 75%);
+    background-size:16px 16px; background-position:0 0,8px 8px;
+  }
+  .logo-preview img{ display:block; max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; }
+  .logo-preview .none{ font-size:12px; color:#a29c8c; }
+  .logo-name{ font-weight:700; font-size:13.5px; color:var(--ink); }
+  .logo-use{ font-size:11.5px; color:#8a8578; }
+  .logo-meta{ font-size:11px; color:#a29c8c; font-family:'JetBrains Mono',monospace; }
+  .logo-btns{ display:flex; gap:8px; flex-wrap:wrap; }
+  .logo-btns button{ padding:9px 14px; font-size:12.5px; }
+  .logo-btns .btn-primary{ flex:0 1 auto; }
+  .logo-btns .btn-ghost.danger{ color:#b23b3b; }
+  .logo-new{
+    border:2px dashed var(--line-strong); border-radius:14px; background:#fffdf9; color:#8a8578; font-size:13px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; min-height:200px; cursor:pointer;
+  }
+  .logo-new:hover{ border-color:var(--gold); color:var(--gold-deep); }
+  .logo-status{ font-size:12.5px; color:#7a756a; margin-top:12px; min-height:18px; }
+  .logo-status.error{ color:#b23b3b; }
+
+  @media (max-width:920px){
+    .org-hero{ padding:16px; gap:14px; }
+    .org-title{ font-size:21px; }
+    .org-ibtn{ width:38px; height:38px; }
+    .org-move{ height:38px; }
+    .org-replace{ height:38px; }
+    .org-bar .btn-primary, .org-bar .btn-ghost, .org-results-head .btn-primary{ width:100%; flex:1 1 100%; }
+    .org-result-row .btn-ghost{ width:100%; }
+  }
+
   /* ===== PRINT ===== */
   @media print{
     header, .panel, .preview-toolbar{ display:none !important; }
@@ -572,6 +734,10 @@
       <button type="button" class="side-link" data-page="pdftools">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg>
         Ferramentas PDF
+      </button>
+      <button type="button" class="side-link" data-page="organizacao">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1.2"/><rect x="3" y="11" width="18" height="4" rx="1.2"/><rect x="3" y="17" width="18" height="4" rx="1.2"/></svg>
+        Organização de Documentos
       </button>
       <button type="button" class="side-link" data-page="documentos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
@@ -1543,6 +1709,42 @@
         </div>
       </section>
 
+      <section class="page" id="page-organizacao">
+        <div class="org-wrap">
+          <div class="org-hero">
+            <div class="org-logo" id="orgLogo"></div>
+            <div class="org-head">
+              <div class="eyebrow">Direcional</div>
+              <h1 class="org-title">Organização de Documentos</h1>
+              <div class="sub">Organize e unifique a documentação nos lotes corretos.</div>
+            </div>
+            <div class="org-summary" id="orgSummary"></div>
+          </div>
+
+          <div class="org-lots" id="orgLots"></div>
+
+          <div class="org-bar">
+            <div class="org-bar-info">Tudo é processado aqui no seu navegador: os documentos não são enviados para a internet. A ordem de cada lista é a ordem do PDF final.</div>
+            <button type="button" class="btn-ghost" id="orgClear">Limpar documentos</button>
+            <button type="button" class="btn-primary" id="orgGenerate">Gerar documentação Direcional</button>
+          </div>
+
+          <div class="org-progress" id="orgProgress">
+            <div class="org-progress-text" id="orgProgressText"></div>
+            <div class="bar-track"><div class="bar-fill" id="orgProgressBar"></div></div>
+          </div>
+
+          <div class="org-results" id="orgResults">
+            <div class="org-results-head">
+              <div class="org-results-title" id="orgResultsTitle">Documentação pronta</div>
+              <button type="button" class="btn-primary" id="orgDownloadAll">Baixar os 3 PDFs</button>
+            </div>
+            <div class="org-result-list" id="orgResultList"></div>
+            <div class="org-dl-note" id="orgDlNote">Os PDFs são baixados separadamente, um por lote. Se o navegador perguntar se pode baixar vários arquivos, clique em <b>Permitir</b>.</div>
+          </div>
+        </div>
+      </section>
+
       <section class="page" id="page-adm">
         <div class="page-head">
           <div>
@@ -1551,10 +1753,11 @@
           </div>
           <button type="button" class="btn-ghost" id="btnAdmSair">Sair do ADM</button>
         </div>
-        <div class="empty-state">
-          <div class="empty-icon">🛡️</div>
-          <div class="empty-title">Nenhuma função ADM ainda</div>
-          <div class="empty-sub">As ferramentas exclusivas do administrador vão aparecer aqui.</div>
+        <div class="adm-section">
+          <div class="adm-section-title">Identidade visual / Logos</div>
+          <div class="adm-section-sub">Logos usadas dentro do sistema. A imagem é guardada exatamente como enviada (PNG, JPG, WEBP ou SVG, até 1 MB) e exibida sem distorção.</div>
+          <div class="logo-grid" id="logoGrid"></div>
+          <div class="logo-status" id="logoStatus"></div>
         </div>
       </section>
 
@@ -1586,6 +1789,27 @@
       <div class="modal-actions">
         <button type="button" class="btn-ghost" id="settingsCancel">Cancelar</button>
         <button type="button" class="btn-primary" id="settingsSave">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay org-preview-overlay" id="orgPreviewOverlay" style="display:none;">
+    <div class="modal-box org-preview-box">
+      <div class="org-preview-head">
+        <div class="name" id="orgPreviewName"></div>
+        <button type="button" class="btn-ghost" id="orgPreviewClose" style="padding:8px 14px;">Fechar</button>
+      </div>
+      <div class="org-preview-body" id="orgPreviewBody"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="orgConfirmOverlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-title">Limpar documentos</div>
+      <div style="font-size:13.5px; color:#5c584e; margin-bottom:18px; line-height:1.5;">Deseja realmente remover todos os documentos adicionados?</div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="orgConfirmCancel">Cancelar</button>
+        <button type="button" class="btn-primary" id="orgConfirmYes" style="flex:0 1 auto;">Sim, limpar tudo</button>
       </div>
     </div>
   </div>
@@ -3541,8 +3765,8 @@ render();
   }
 
   // ---------- page navigation ----------
-  const PAGES = ['inicio','declaracoes','pdftools','documentos','favoritos','adm'];
-  const PAGE_TITLES = { inicio:'Central de Documentos', declaracoes:'Declarações', pdftools:'Ferramentas PDF', documentos:'Meus Documentos', favoritos:'Modelos Favoritos', adm:'Área ADM' };
+  const PAGES = ['inicio','declaracoes','pdftools','organizacao','documentos','favoritos','adm'];
+  const PAGE_TITLES = { inicio:'Central de Documentos', declaracoes:'Declarações', pdftools:'Ferramentas PDF', organizacao:'Organização de Documentos', documentos:'Meus Documentos', favoritos:'Modelos Favoritos', adm:'Área ADM' };
 
   function goToPage(page){
     if(page === 'adm' && !window.admLogado){ window.abrirLoginAdm(); return; }
@@ -3855,6 +4079,887 @@ render();
 })();
 </script>
 <script>
+// ===== IDENTIDADE VISUAL / LOGOS =====
+// Logos cadastradas pelo ADM. Ficam no Firebase (nó "logos") para aparecerem para
+// toda a equipe, com cópia local no navegador para abrir rápido e funcionar offline.
+// Cada logo é um registro { nome, uso, dataUrl, tipo, largura, altura, bytes, atualizadoEm }.
+// Para criar novos espaços padrão, basta acrescentar em LOGOS_PADRAO.
+(function(){
+  var NUVEM_URL = 'https://ilove-audaz-sistema-default-rtdb.firebaseio.com';
+  var CHAVE_CACHE = 'iloveaudaz_logos';
+  var MAX_BYTES = 1024 * 1024;
+  var TIPOS = { 'image/png':'PNG', 'image/jpeg':'JPG', 'image/webp':'WEBP', 'image/svg+xml':'SVG' };
+  var LOGOS_PADRAO = {
+    direcional: { nome:'Logo Direcional', uso:'Organização de Documentos — Direcional' }
+  };
+
+  var logos = lerCache();
+
+  function lerCache(){
+    try{ return JSON.parse(localStorage.getItem(CHAVE_CACHE)) || {}; }catch(e){ return {}; }
+  }
+  function gravarCache(){
+    try{ localStorage.setItem(CHAVE_CACHE, JSON.stringify(logos)); }catch(e){}
+  }
+  function avisar(){
+    document.dispatchEvent(new CustomEvent('audaz:logos'));
+  }
+  function caminho(id){
+    return NUVEM_URL.replace(/\/$/,'') + '/logos' + (id ? '/' + encodeURIComponent(id) : '') + '.json';
+  }
+
+  function baixarDaNuvem(){
+    var expira = new Promise(function(res){ setTimeout(function(){ res(null); }, 6000); });
+    return Promise.race([fetch(caminho()).then(function(r){ return r.ok ? r.json() : null; }), expira])
+      .then(function(dados){
+        if(!dados || typeof dados !== 'object') return;
+        logos = dados;
+        gravarCache();
+        avisar();
+      })
+      .catch(function(){});
+  }
+
+  function enviarParaNuvem(id, registro){
+    var opcoes = registro
+      ? { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(registro) }
+      : { method:'DELETE' };
+    return fetch(caminho(id), opcoes).then(function(r){ return r.ok; }).catch(function(){ return false; });
+  }
+
+  function lerArquivo(file){
+    return new Promise(function(resolve, reject){
+      var r = new FileReader();
+      r.onload = function(){ resolve(r.result); };
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+  function medir(dataUrl){
+    return new Promise(function(resolve){
+      var img = new Image();
+      img.onload = function(){ resolve({ w: img.naturalWidth, h: img.naturalHeight }); };
+      img.onerror = function(){ resolve(null); };
+      img.src = dataUrl;
+    });
+  }
+  function tipoDoArquivo(file){
+    if(TIPOS[file.type]) return file.type;
+    var ext = (file.name.split('.').pop() || '').toLowerCase();
+    return { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', svg:'image/svg+xml' }[ext] || '';
+  }
+
+  window.AudazLogos = {
+    padrao: LOGOS_PADRAO,
+    // Lista de espaços: os padrão primeiro, depois os criados pelo ADM.
+    lista: function(){
+      var ids = Object.keys(LOGOS_PADRAO);
+      Object.keys(logos).forEach(function(id){ if(ids.indexOf(id) < 0) ids.push(id); });
+      return ids.map(function(id){
+        var base = LOGOS_PADRAO[id] || {};
+        var reg = logos[id] || {};
+        return { id:id, nome: reg.nome || base.nome || id, uso: reg.uso || base.uso || '', padrao: !!LOGOS_PADRAO[id], logo: reg.dataUrl ? reg : null };
+      });
+    },
+    obter: function(id){ var r = logos[id]; return r && r.dataUrl ? r : null; },
+    // Valida e grava a imagem sem alterá-la: o arquivo é guardado exatamente como foi enviado.
+    salvar: function(id, file, extra){
+      var tipo = tipoDoArquivo(file);
+      if(!tipo) return Promise.reject(new Error('Formato não aceito. Envie PNG, JPG, WEBP ou SVG.'));
+      if(file.size > MAX_BYTES) return Promise.reject(new Error('A imagem tem ' + (file.size/1024/1024).toFixed(1) + ' MB. O limite é 1 MB.'));
+      return lerArquivo(file).then(function(dataUrl){
+        dataUrl = dataUrl.replace(/^data:[^;,]*/, 'data:' + tipo);
+        return medir(dataUrl).then(function(dim){
+          if(!dim) throw new Error('Não foi possível ler essa imagem. Verifique o arquivo e tente novamente.');
+          var base = LOGOS_PADRAO[id] || {};
+          var atual = logos[id] || {};
+          var registro = {
+            nome: (extra && extra.nome) || atual.nome || base.nome || id,
+            uso: (extra && extra.uso) || atual.uso || base.uso || '',
+            dataUrl: dataUrl, tipo: TIPOS[tipo], largura: dim.w, altura: dim.h,
+            bytes: file.size, atualizadoEm: Date.now()
+          };
+          logos[id] = registro;
+          gravarCache();
+          avisar();
+          return enviarParaNuvem(id, registro);
+        });
+      });
+    },
+    remover: function(id){
+      delete logos[id];
+      gravarCache();
+      avisar();
+      return enviarParaNuvem(id, null);
+    },
+    atualizar: baixarDaNuvem
+  };
+
+  baixarDaNuvem();
+})();
+
+// ===== ADM: tela de identidade visual =====
+(function(){
+  var grid = document.getElementById('logoGrid');
+  var status = document.getElementById('logoStatus');
+  if(!grid) return;
+
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
+  }
+  function msg(texto, erro){
+    status.textContent = texto || '';
+    status.classList.toggle('error', !!erro);
+  }
+  function quando(ts){
+    if(!ts) return '';
+    var d = new Date(ts);
+    return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  }
+  function resultadoNuvem(ok, acao){
+    if(ok) msg(acao + ' Já aparece para toda a equipe.');
+    else msg(acao + ' Porém não foi possível publicar na nuvem; por enquanto ela vale apenas neste navegador.', true);
+  }
+
+  function escolherArquivo(id, extra){
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/png,image/jpeg,image/webp,image/svg+xml,.png,.jpg,.jpeg,.webp,.svg';
+    input.addEventListener('change', function(){
+      var file = input.files[0];
+      if(!file) return;
+      msg('Salvando logo...');
+      window.AudazLogos.salvar(id, file, extra)
+        .then(function(ok){ resultadoNuvem(ok, 'Logo salva.'); })
+        .catch(function(err){ msg(err.message, true); });
+    });
+    input.click();
+  }
+
+  function render(){
+    grid.innerHTML = '';
+    window.AudazLogos.lista().forEach(function(item){
+      var card = document.createElement('div');
+      card.className = 'logo-card';
+      var l = item.logo;
+      card.innerHTML =
+        '<div class="logo-preview">' + (l ? '<img alt="">' : '<span class="none">Nenhuma logo cadastrada</span>') + '</div>' +
+        '<div><div class="logo-name">' + esc(item.nome) + '</div>' +
+        (item.uso ? '<div class="logo-use">Usada em: ' + esc(item.uso) + '</div>' : '') + '</div>' +
+        (l ? '<div class="logo-meta">' + esc(l.tipo) + ' · ' + l.largura + '×' + l.altura + ' px · ' + Math.max(1, Math.round(l.bytes/1024)) + ' KB<br>Atualizada em ' + esc(quando(l.atualizadoEm)) + '</div>' : '') +
+        '<div class="logo-btns">' +
+          '<button type="button" class="btn-primary" data-acao="enviar">' + (l ? 'Substituir' : 'Enviar logo') + '</button>' +
+          ((l || !item.padrao) ? '<button type="button" class="btn-ghost danger" data-acao="remover">Remover</button>' : '') +
+        '</div>';
+      if(l) card.querySelector('img').src = l.dataUrl;
+      card.querySelector('[data-acao="enviar"]').addEventListener('click', function(){ escolherArquivo(item.id); });
+      var rem = card.querySelector('[data-acao="remover"]');
+      if(rem) rem.addEventListener('click', function(){
+        if(!confirm('Remover a "' + item.nome + '"?')) return;
+        msg('Removendo...');
+        window.AudazLogos.remover(item.id).then(function(ok){ resultadoNuvem(ok, 'Logo removida.'); });
+      });
+      grid.appendChild(card);
+    });
+
+    var nova = document.createElement('button');
+    nova.type = 'button';
+    nova.className = 'logo-new';
+    nova.textContent = '+ Nova logo';
+    nova.addEventListener('click', function(){
+      var nome = (prompt('Nome da nova logo (ex.: Logo Parceiro X):') || '').trim();
+      if(!nome) return;
+      var id = nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || ('logo-' + Date.now());
+      escolherArquivo(id, { nome: nome });
+    });
+    grid.appendChild(nova);
+  }
+
+  document.addEventListener('audaz:logos', render);
+  render();
+})();
+
+// ===== ORGANIZAÇÃO DE DOCUMENTOS — DIRECIONAL =====
+// Tudo acontece no navegador: os arquivos são lidos do computador/celular,
+// unidos com pdf-lib e devolvidos como 3 PDFs. Nada é enviado para servidor.
+(function(){
+  if(!document.getElementById('page-organizacao')) return;
+  var PDFDocument = PDFLib.PDFDocument;
+
+  var LOTES = [
+    { id:'pessoais', num:'01', titulo:'Documentos Pessoais', curto:'Pessoais',
+      exemplos:'Ex.: RG, CPF, CNH, comprovante de endereço, certidão de estado civil.',
+      arquivo:'01 - DOCUMENTOS PESSOAIS.pdf', vazio:'Nenhum Documento Pessoal foi adicionado.' },
+    { id:'financeiros', num:'02', titulo:'Documentos Financeiros', curto:'Financeiros',
+      exemplos:'Ex.: contracheque (CCH), extratos bancários, Imposto de Renda, comprovantes de renda.',
+      arquivo:'02 - DOCUMENTOS FINANCEIROS.pdf', vazio:'Nenhum Documento Financeiro foi adicionado.' },
+    { id:'complementares', num:'03', titulo:'Documentos Complementares', curto:'Complementares',
+      exemplos:'Ex.: CTPS, FGTS, documentação de dependentes, outros documentos.',
+      arquivo:'03 - DOCUMENTOS COMPLEMENTARES.pdf', vazio:'Nenhum Documento Complementar foi adicionado.' }
+  ];
+
+  var MB = 1024 * 1024;
+  var MAX_ARQUIVO = 50 * MB;
+  var MAX_TOTAL = 400 * MB;
+  var MAX_QTD = 150;
+  var IMAGENS = { jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', webp:'image/webp', gif:'image/gif', bmp:'image/bmp' };
+  var ACCEPT = 'application/pdf,.pdf,image/jpeg,image/png,image/webp,image/gif,image/bmp,.jpg,.jpeg,.png,.webp,.gif,.bmp';
+  // A4 em pontos; imagens são encaixadas mantendo a proporção, sem cortes.
+  var A4 = [595.28, 841.89];
+  var MARGEM = 18;
+
+  var itens = [];       // { id, file, lote, tipo:'pdf'|'img', paginas, estado:'verificando'|'ok'|'erro', erro }
+  var resultados = null; // { [lote]: { blob, url, paginas, qtd } }
+  var gerando = false;
+  var arrastando = null;
+
+  var ICON = {
+    upload:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>',
+    up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>',
+    down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>',
+    eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+    trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>'
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var lotsEl = $('orgLots');
+
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
+  }
+  function fmtBytes(b){
+    if(b < 1024) return b + ' B';
+    if(b < MB) return (b/1024).toFixed(0) + ' KB';
+    return (b/MB).toFixed(1).replace('.', ',') + ' MB';
+  }
+  function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+  function extensao(file){ return (file.name.split('.').pop() || '').toLowerCase(); }
+  function tipoDe(file){
+    var ext = extensao(file);
+    if(file.type === 'application/pdf' || ext === 'pdf') return 'pdf';
+    if(IMAGENS[ext] || /^image\/(jpeg|png|webp|gif|bmp)$/.test(file.type)) return 'img';
+    return null;
+  }
+  function rotuloTipo(item){
+    if(item.tipo === 'pdf') return 'PDF';
+    var ext = extensao(item.file).toUpperCase();
+    return ext === 'JPEG' ? 'JPG' : (ext || 'IMG');
+  }
+  function doLote(lote){ return itens.filter(function(i){ return i.lote === lote; }); }
+  function plural(n, um, varios){ return n + ' ' + (n === 1 ? um : varios); }
+  function proximoQuadro(){ return new Promise(function(r){ setTimeout(r, 0); }); }
+
+  // ---------- montagem dos 3 lotes ----------
+  LOTES.forEach(function(L){
+    var card = document.createElement('div');
+    card.className = 'org-lot';
+    card.dataset.lote = L.id;
+    card.innerHTML =
+      '<div class="org-lot-head"><span class="org-lot-num">' + L.num + '</span><div>' +
+        '<div class="org-lot-title">' + L.titulo + '</div>' +
+        '<div class="org-lot-count" data-count></div></div></div>' +
+      '<div class="org-lot-hint">' + L.exemplos + '</div>' +
+      '<div class="org-drop" tabindex="0" role="button" aria-label="Adicionar arquivos em ' + L.titulo + '">' +
+        '<div class="icon">' + ICON.upload + '</div>' +
+        '<div class="label">Arraste os arquivos aqui ou clique para selecionar</div>' +
+        '<div class="hint">PDF, JPG, JPEG ou PNG · até 50 MB por arquivo</div></div>' +
+      '<div class="org-lot-msg" data-msg></div>' +
+      '<div class="org-list" data-list></div>';
+    lotsEl.appendChild(card);
+
+    var drop = card.querySelector('.org-drop');
+    var input = document.createElement('input');
+    input.type = 'file'; input.multiple = true; input.accept = ACCEPT; input.style.display = 'none';
+    card.appendChild(input);
+    drop.addEventListener('click', function(){ input.click(); });
+    drop.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); input.click(); } });
+    input.addEventListener('change', function(){
+      if(input.files.length) adicionar(Array.from(input.files), L.id);
+      input.value = '';
+    });
+
+    // Arquivos vindos do computador soltos em qualquer ponto do lote
+    card.addEventListener('dragover', function(e){
+      e.preventDefault();
+      if(arrastando){ moverArrastoPara(card, e.clientY); }
+      else { drop.classList.add('dragover'); }
+      card.classList.add('drop-target');
+    });
+    card.addEventListener('dragleave', function(e){
+      if(card.contains(e.relatedTarget)) return;
+      card.classList.remove('drop-target'); drop.classList.remove('dragover');
+    });
+    card.addEventListener('drop', function(e){
+      e.preventDefault();
+      card.classList.remove('drop-target'); drop.classList.remove('dragover');
+      if(!arrastando && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length){
+        adicionar(Array.from(e.dataTransfer.files), L.id);
+      }
+    });
+  });
+
+  function cardDoLote(lote){ return lotsEl.querySelector('.org-lot[data-lote="' + lote + '"]'); }
+  function msgLote(lote, texto){ cardDoLote(lote).querySelector('[data-msg]').textContent = texto || ''; }
+
+  // ---------- adicionar arquivos ----------
+  function adicionar(files, lote){
+    var recusados = [];
+    var total = itens.reduce(function(s, i){ return s + i.file.size; }, 0);
+    var novos = [];
+    files.forEach(function(file){
+      var tipo = tipoDe(file);
+      if(!tipo){
+        var ext = extensao(file);
+        recusados.push('"' + file.name + '" não é um formato aceito' + (ext === 'heic' || ext === 'heif' ? ' (fotos HEIC do iPhone: exporte como JPG)' : '') + '.');
+        return;
+      }
+      if(file.size === 0){ recusados.push('"' + file.name + '" está vazio.'); return; }
+      if(file.size > MAX_ARQUIVO){ recusados.push('"' + file.name + '" tem ' + fmtBytes(file.size) + '. O limite é 50 MB por arquivo.'); return; }
+      if(itens.length + novos.length >= MAX_QTD){ recusados.push('Limite de ' + MAX_QTD + ' arquivos atingido.'); return; }
+      if(total + file.size > MAX_TOTAL){ recusados.push('"' + file.name + '" ultrapassa o limite total de 400 MB.'); return; }
+      total += file.size;
+      novos.push({ id: uid(), file: file, lote: lote, tipo: tipo, paginas: null, estado: 'verificando', erro: '' });
+    });
+    // Mantém só a primeira mensagem de limite repetida
+    recusados = recusados.filter(function(m, i){ return recusados.indexOf(m) === i; });
+    msgLote(lote, recusados.join(' '));
+    if(!novos.length) return;
+    itens = itens.concat(novos);
+    alterou();
+    verificarFila(novos);
+  }
+
+  // Confere cada arquivo logo ao entrar, para apontar problemas antes da geração.
+  var fila = Promise.resolve();
+  function verificarFila(lista){
+    lista.forEach(function(item){
+      fila = fila.then(function(){ return verificar(item); }).then(proximoQuadro);
+    });
+  }
+  function verificar(item){
+    if(itens.indexOf(item) < 0) return Promise.resolve();
+    var tarefa = item.tipo === 'pdf'
+      ? item.file.arrayBuffer().then(function(buf){
+          return PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false }).then(function(doc){
+            if(doc.isEncrypted) throw new ErroArquivo('O arquivo "' + item.file.name + '" está protegido por senha. Use a ferramenta "Desbloquear PDF" e adicione a cópia desbloqueada.');
+            item.paginas = doc.getPageCount();
+          });
+        })
+      : decodificarImagem(item.file).then(function(bmp){ item.paginas = 1; fecharBitmap(bmp); });
+    return tarefa.then(function(){
+      item.estado = 'ok'; item.erro = '';
+    }).catch(function(err){
+      item.estado = 'erro';
+      item.erro = mensagemErro(item, err);
+    }).then(function(){ if(itens.indexOf(item) >= 0) render(); });
+  }
+
+  function ErroArquivo(msg){ this.message = msg; }
+  function mensagemErro(item, err){
+    if(err instanceof ErroArquivo) return err.message;
+    return 'Não foi possível processar "' + item.file.name + '". Verifique o arquivo e tente novamente.';
+  }
+
+  // ---------- render ----------
+  function alterou(){
+    limparResultados();
+    render();
+  }
+
+  function render(){
+    LOTES.forEach(function(L){
+      var card = cardDoLote(L.id);
+      var lista = doLote(L.id);
+      var paginas = lista.reduce(function(s, i){ return s + (i.paginas || 0); }, 0);
+      card.querySelector('[data-count]').innerHTML = '<b>' + plural(lista.length, 'arquivo', 'arquivos') + '</b>' + (paginas ? ' · ' + plural(paginas, 'página', 'páginas') : '');
+      var listEl = card.querySelector('[data-list]');
+      listEl.innerHTML = '';
+      lista.forEach(function(item, idx){ listEl.appendChild(linha(item, idx, lista.length)); });
+    });
+    resumo();
+  }
+
+  function linha(item, idx, qtd){
+    var row = document.createElement('div');
+    row.className = 'org-row' + (item.estado === 'erro' ? ' error' : '');
+    row.draggable = true;
+    row.dataset.id = item.id;
+    var opcoes = LOTES.filter(function(L){ return L.id !== item.lote; })
+      .map(function(L){ return '<option value="' + L.id + '">→ ' + L.curto + '</option>'; }).join('');
+    var meta = fmtBytes(item.file.size) + (item.paginas ? ' · ' + plural(item.paginas, 'pág.', 'pág.') : (item.estado === 'verificando' ? ' · lendo…' : ''));
+    row.innerHTML =
+      '<div class="org-row-top"><span class="org-handle" title="Arraste para reordenar ou mudar de lote">⠿</span>' +
+        '<span class="org-pos">' + (idx + 1) + '</span>' +
+        '<span class="org-name" title="' + esc(item.file.name) + '">' + esc(item.file.name) + '</span></div>' +
+      (item.estado === 'erro' ? '<div class="org-err">' + esc(item.erro) + '</div>' : '') +
+      '<div class="org-row-bottom">' +
+        '<span class="org-badge ' + (item.tipo === 'pdf' ? 'pdf' : 'img') + '">' + rotuloTipo(item) + '</span>' +
+        '<span class="org-meta">' + meta + '</span>' +
+        '<div class="org-actions">' +
+          (item.estado === 'erro' ? '<button type="button" class="org-replace" data-a="trocar">Substituir</button>' : '') +
+          '<button type="button" class="org-ibtn" data-a="subir" title="Subir" aria-label="Subir"' + (idx === 0 ? ' disabled' : '') + '>' + ICON.up + '</button>' +
+          '<button type="button" class="org-ibtn" data-a="descer" title="Descer" aria-label="Descer"' + (idx === qtd - 1 ? ' disabled' : '') + '>' + ICON.down + '</button>' +
+          '<select class="org-move" data-a="mover" title="Mover para outro lote" aria-label="Mover para outro lote"><option value="">Mover…</option>' + opcoes + '</select>' +
+          '<button type="button" class="org-ibtn" data-a="ver" title="Visualizar" aria-label="Visualizar">' + ICON.eye + '</button>' +
+          '<button type="button" class="org-ibtn danger" data-a="excluir" title="Excluir" aria-label="Excluir">' + ICON.trash + '</button>' +
+        '</div></div>';
+
+    row.querySelector('[data-a="subir"]').addEventListener('click', function(){ deslocar(item, -1); });
+    row.querySelector('[data-a="descer"]').addEventListener('click', function(){ deslocar(item, 1); });
+    row.querySelector('[data-a="mover"]').addEventListener('change', function(e){ if(e.target.value) moverParaLote(item, e.target.value); });
+    row.querySelector('[data-a="ver"]').addEventListener('click', function(){ visualizar(item); });
+    row.querySelector('[data-a="excluir"]').addEventListener('click', function(){ excluir(item); });
+    var trocar = row.querySelector('[data-a="trocar"]');
+    if(trocar) trocar.addEventListener('click', function(){ substituir(item); });
+    // os controles não devem iniciar o arrasto da linha
+    row.querySelectorAll('button, select').forEach(function(el){ el.setAttribute('draggable', 'false'); });
+
+    row.addEventListener('dragstart', function(e){
+      if(e.target !== row){ return; }
+      arrastando = item;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      try{ e.dataTransfer.setData('text/plain', item.id); }catch(err){}
+    });
+    row.addEventListener('dragend', function(){
+      row.classList.remove('dragging');
+      lotsEl.querySelectorAll('.org-lot').forEach(function(c){ c.classList.remove('drop-target'); });
+      if(!arrastando) return;
+      arrastando = null;
+      aplicarOrdemDoDom();
+    });
+    return row;
+  }
+
+  function resumo(){
+    var cont = {};
+    LOTES.forEach(function(L){ cont[L.id] = doLote(L.id).length; });
+    $('orgSummary').innerHTML = '<span class="org-sum-label">Documentação</span>' +
+      LOTES.map(function(L){ return '<span class="org-chip">' + L.curto + ': <b>' + cont[L.id] + '</b></span>'; }).join('') +
+      '<span class="org-chip total">Total: <b>' + plural(itens.length, 'arquivo', 'arquivos') + '</b></span>';
+    $('orgGenerate').disabled = gerando || itens.length === 0;
+  }
+
+  // ---------- reordenar / mover ----------
+  function deslocar(item, delta){
+    var lista = doLote(item.lote);
+    var pos = lista.indexOf(item);
+    var alvo = lista[pos + delta];
+    if(!alvo) return;
+    var a = itens.indexOf(item), b = itens.indexOf(alvo);
+    itens[a] = alvo; itens[b] = item;
+    alterou();
+  }
+
+  function moverParaLote(item, lote){
+    itens.splice(itens.indexOf(item), 1);
+    item.lote = lote;
+    itens.push(item); // entra no fim do lote de destino
+    alterou();
+  }
+
+  function excluir(item){
+    itens.splice(itens.indexOf(item), 1);
+    alterou();
+  }
+
+  function substituir(item){
+    var input = document.createElement('input');
+    input.type = 'file'; input.accept = ACCEPT;
+    input.addEventListener('change', function(){
+      var file = input.files[0];
+      if(!file) return;
+      var tipo = tipoDe(file);
+      if(!tipo){ msgLote(item.lote, '"' + file.name + '" não é um formato aceito.'); return; }
+      if(file.size > MAX_ARQUIVO){ msgLote(item.lote, '"' + file.name + '" tem ' + fmtBytes(file.size) + '. O limite é 50 MB por arquivo.'); return; }
+      msgLote(item.lote, '');
+      item.file = file; item.tipo = tipo; item.paginas = null; item.estado = 'verificando'; item.erro = '';
+      alterou();
+      verificarFila([item]);
+    });
+    input.click();
+  }
+
+  // Durante o arrasto a linha é movida no DOM; ao soltar, a ordem do DOM vira a ordem real.
+  function moverArrastoPara(card, y){
+    var listEl = card.querySelector('[data-list]');
+    var linhaEl = lotsEl.querySelector('.org-row.dragging');
+    if(!linhaEl) return;
+    var depois = null;
+    var outras = Array.from(listEl.querySelectorAll('.org-row:not(.dragging)'));
+    for(var i = 0; i < outras.length; i++){
+      var box = outras[i].getBoundingClientRect();
+      if(y < box.top + box.height / 2){ depois = outras[i]; break; }
+    }
+    if(depois) listEl.insertBefore(linhaEl, depois);
+    else listEl.appendChild(linhaEl);
+  }
+
+  function aplicarOrdemDoDom(){
+    var porId = {};
+    itens.forEach(function(i){ porId[i.id] = i; });
+    var nova = [];
+    LOTES.forEach(function(L){
+      cardDoLote(L.id).querySelectorAll('.org-row').forEach(function(r){
+        var it = porId[r.dataset.id];
+        if(it){ it.lote = L.id; nova.push(it); }
+      });
+    });
+    if(nova.length === itens.length) itens = nova;
+    alterou();
+  }
+
+  // ---------- limpar ----------
+  $('orgClear').addEventListener('click', function(){
+    if(!itens.length && !resultados) return;
+    $('orgConfirmOverlay').style.display = 'flex';
+  });
+  $('orgConfirmCancel').addEventListener('click', function(){ $('orgConfirmOverlay').style.display = 'none'; });
+  $('orgConfirmOverlay').addEventListener('click', function(e){ if(e.target === e.currentTarget) e.currentTarget.style.display = 'none'; });
+  $('orgConfirmYes').addEventListener('click', function(){
+    $('orgConfirmOverlay').style.display = 'none';
+    itens = [];
+    LOTES.forEach(function(L){ msgLote(L.id, ''); });
+    progresso(null);
+    alterou();
+  });
+
+  // ---------- imagens ----------
+  function decodificarImagem(file){
+    if(window.createImageBitmap){
+      return createImageBitmap(file, { imageOrientation: 'from-image' }).catch(function(){ return createImageBitmap(file); });
+    }
+    return new Promise(function(resolve, reject){
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function(){ resolve(img); setTimeout(function(){ URL.revokeObjectURL(url); }, 0); };
+      img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error('imagem')); };
+      img.src = url;
+    });
+  }
+  function fecharBitmap(bmp){ if(bmp && bmp.close) bmp.close(); }
+
+  // Orientação EXIF de um JPEG (1 = normal). Fotos de celular costumam vir giradas.
+  function orientacaoJpeg(buf){
+    var v = new DataView(buf);
+    if(v.byteLength < 4 || v.getUint16(0) !== 0xFFD8) return 1;
+    var off = 2;
+    while(off + 4 < v.byteLength){
+      var marca = v.getUint16(off);
+      var tam = v.getUint16(off + 2);
+      if(marca === 0xFFE1 && v.getUint32(off + 4) === 0x45786966){
+        var tiff = off + 10;
+        var le = v.getUint16(tiff) === 0x4949;
+        var ifd = tiff + v.getUint32(tiff + 4, le);
+        var n = v.getUint16(ifd, le);
+        for(var i = 0; i < n; i++){
+          var e = ifd + 2 + i * 12;
+          if(e + 10 > v.byteLength) break;
+          if(v.getUint16(e, le) === 0x0112) return v.getUint16(e + 8, le);
+        }
+        return 1;
+      }
+      if((marca & 0xFF00) !== 0xFF00) break;
+      off += 2 + tam;
+    }
+    return 1;
+  }
+
+  // Imagens que não podem entrar direto no PDF são redesenhadas em alta qualidade.
+  function imagemParaJpeg(file){
+    return decodificarImagem(file).then(function(bmp){
+      var w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight;
+      var escala = Math.min(1, Math.sqrt(16e6 / (w * h)));
+      var cw = Math.max(1, Math.round(w * escala)), ch = Math.max(1, Math.round(h * escala));
+      var canvas = document.createElement('canvas');
+      canvas.width = cw; canvas.height = ch;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, cw, ch);
+      ctx.drawImage(bmp, 0, 0, cw, ch);
+      fecharBitmap(bmp);
+      return new Promise(function(resolve, reject){
+        canvas.toBlob(function(blob){
+          canvas.width = canvas.height = 0;
+          if(!blob) return reject(new Error('canvas'));
+          blob.arrayBuffer().then(resolve, reject);
+        }, 'image/jpeg', 0.92);
+      });
+    });
+  }
+
+  function embutirImagem(doc, item){
+    return item.file.arrayBuffer().then(function(buf){
+      var ext = extensao(item.file);
+      var tipo = item.file.type;
+      var ehJpeg = tipo === 'image/jpeg' || ext === 'jpg' || ext === 'jpeg';
+      var ehPng = tipo === 'image/png' || ext === 'png';
+      var direto = null;
+      // JPEG e PNG entram com os bytes originais, sem recompressão.
+      if(ehJpeg && orientacaoJpeg(buf) === 1) direto = doc.embedJpg(buf);
+      else if(ehPng) direto = doc.embedPng(buf);
+      var viaCanvas = function(){ return imagemParaJpeg(item.file).then(function(jpg){ return doc.embedJpg(jpg); }); };
+      return direto ? direto.catch(viaCanvas) : viaCanvas();
+    }).then(function(img){
+      var w = img.width, h = img.height;
+      var paisagem = w > h;
+      var pw = paisagem ? A4[1] : A4[0], ph = paisagem ? A4[0] : A4[1];
+      var escala = Math.min((pw - 2 * MARGEM) / w, (ph - 2 * MARGEM) / h);
+      var dw = w * escala, dh = h * escala;
+      var page = doc.addPage([pw, ph]);
+      page.drawImage(img, { x: (pw - dw) / 2, y: (ph - dh) / 2, width: dw, height: dh });
+      return 1;
+    });
+  }
+
+  function anexarPdf(doc, item){
+    return item.file.arrayBuffer().then(function(buf){
+      return PDFDocument.load(buf, { ignoreEncryption: true, updateMetadata: false });
+    }).then(function(src){
+      if(src.isEncrypted) throw new ErroArquivo('O arquivo "' + item.file.name + '" está protegido por senha. Use a ferramenta "Desbloquear PDF" e adicione a cópia desbloqueada.');
+      return doc.copyPages(src, src.getPageIndices());
+    }).then(function(paginas){
+      paginas.forEach(function(p){ doc.addPage(p); });
+      return paginas.length;
+    });
+  }
+
+  // ---------- gerar ----------
+  function progresso(texto, fracao, erro){
+    var box = $('orgProgress');
+    if(texto == null){ box.classList.remove('show'); return; }
+    box.classList.add('show');
+    var t = $('orgProgressText');
+    t.textContent = texto;
+    t.classList.toggle('error', !!erro);
+    $('orgProgressBar').style.width = Math.round((fracao || 0) * 100) + '%';
+  }
+
+  $('orgGenerate').addEventListener('click', gerar);
+
+  function gerar(){
+    if(gerando) return;
+    if(!itens.length){ progresso('Adicione documentos em pelo menos um lote.', 0, true); return; }
+    gerando = true;
+    limparResultados();
+    resumo();
+    var btn = $('orgGenerate');
+    var original = btn.innerHTML;
+    btn.innerHTML = '<span class="pdf-spinner"></span>Organizando seus documentos...';
+    var total = itens.length;
+    var feitos = 0;
+    var saida = {};
+    progresso('Organizando seus documentos...', 0);
+
+    var cadeia = fila.then(function(){}); // espera verificações pendentes
+    LOTES.forEach(function(L){
+      cadeia = cadeia.then(function(){
+        var lista = doLote(L.id);
+        if(!lista.length) return;
+        var falhou = false;
+        var paginas = 0;
+        return PDFDocument.create().then(function(doc){
+          doc.setTitle(L.arquivo.replace(/\.pdf$/, ''));
+          doc.setProducer('iLove Audaz');
+          doc.setCreator('iLove Audaz');
+          var passo = Promise.resolve();
+          lista.forEach(function(item){
+            passo = passo.then(function(){
+              feitos++;
+              progresso('Processando documento ' + feitos + ' de ' + total + '...', (feitos - 1) / total);
+              return proximoQuadro().then(function(){
+                return item.tipo === 'pdf' ? anexarPdf(doc, item) : embutirImagem(doc, item);
+              }).then(function(n){
+                paginas += n;
+                if(item.estado !== 'ok'){ item.estado = 'ok'; item.erro = ''; }
+              }).catch(function(err){
+                falhou = true;
+                item.estado = 'erro';
+                item.erro = mensagemErro(item, err);
+              });
+            });
+          });
+          return passo.then(function(){
+            if(falhou){ saida[L.id] = { falhou: true }; return; }
+            progresso('Gerando ' + L.arquivo + '...', feitos / total);
+            return doc.save().then(function(bytes){
+              var blob = new Blob([bytes], { type: 'application/pdf' });
+              saida[L.id] = { blob: blob, url: URL.createObjectURL(blob), paginas: paginas, qtd: lista.length };
+            });
+          });
+        }).catch(function(){
+          saida[L.id] = { falhou: true };
+        });
+      });
+    });
+
+    cadeia.then(function(){
+      resultados = saida;
+      var erros = itens.filter(function(i){ return i.estado === 'erro'; });
+      if(erros.length){
+        progresso(erros.length === 1 ? erros[0].erro + ' O arquivo está destacado em vermelho: remova ou substitua e gere novamente.'
+          : erros.length + ' arquivos não puderam ser processados e estão destacados em vermelho. Remova ou substitua e gere novamente.', 1, true);
+      } else {
+        progresso('Documentação gerada com sucesso.', 1);
+      }
+    }).then(function(){
+      gerando = false;
+      btn.innerHTML = original;
+      render();
+      mostrarResultados();
+    });
+  }
+
+  function limparResultados(){
+    if(resultados){
+      Object.keys(resultados).forEach(function(k){ if(resultados[k].url) URL.revokeObjectURL(resultados[k].url); });
+    }
+    resultados = null;
+    $('orgResults').classList.remove('show');
+    if(!gerando) progresso(null);
+  }
+
+  function mostrarResultados(){
+    if(!resultados) return;
+    var prontos = LOTES.filter(function(L){ return resultados[L.id] && resultados[L.id].url; });
+    var falhos = LOTES.filter(function(L){ return resultados[L.id] && resultados[L.id].falhou; });
+    var lista = $('orgResultList');
+    lista.innerHTML = '';
+    LOTES.forEach(function(L){
+      var r = resultados[L.id];
+      var row = document.createElement('div');
+      if(r && r.url){
+        row.className = 'org-result-row';
+        row.innerHTML = '<span class="org-result-icon">📄</span><div class="org-result-info"><b>' + L.titulo.toUpperCase() + '</b>' +
+          '<span>' + esc(L.arquivo) + ' · ' + plural(r.paginas, 'página', 'páginas') + ' · ' + fmtBytes(r.blob.size) + '</span></div>' +
+          '<button type="button" class="btn-ghost">Baixar PDF</button>';
+        row.querySelector('button').addEventListener('click', function(){ baixar(L); });
+      } else if(r && r.falhou){
+        row.className = 'org-result-row failed';
+        row.textContent = L.titulo + ': não foi gerado porque um arquivo deste lote apresentou problema.';
+      } else {
+        row.className = 'org-result-row muted';
+        row.textContent = L.vazio;
+      }
+      lista.appendChild(row);
+    });
+    var titulo = $('orgResultsTitle');
+    titulo.textContent = falhos.length ? 'Documentação parcialmente pronta' : 'Documentação pronta';
+    titulo.classList.toggle('ok', !falhos.length);
+    var todos = $('orgDownloadAll');
+    todos.style.display = prontos.length ? '' : 'none';
+    todos.textContent = prontos.length === 1 ? 'Baixar o PDF' : 'Baixar os ' + prontos.length + ' PDFs';
+    $('orgDlNote').style.display = prontos.length > 1 ? '' : 'none';
+    $('orgResults').classList.add('show');
+    $('orgResults').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function baixar(L){
+    var r = resultados && resultados[L.id];
+    if(!r || !r.url) return;
+    var a = document.createElement('a');
+    a.href = r.url; a.download = L.arquivo; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  // Um clique, downloads separados: um arquivo por vez, com pequeno intervalo
+  // para o navegador não descartar os seguintes.
+  $('orgDownloadAll').addEventListener('click', function(){
+    var prontos = LOTES.filter(function(L){ return resultados && resultados[L.id] && resultados[L.id].url; });
+    prontos.forEach(function(L, i){ setTimeout(function(){ baixar(L); }, i * 900); });
+  });
+
+  // ---------- visualizar ----------
+  var preview = { ativo: 0, url: null };
+  function fecharPreview(){
+    preview.ativo++;
+    if(preview.url){ URL.revokeObjectURL(preview.url); preview.url = null; }
+    $('orgPreviewBody').innerHTML = '';
+    $('orgPreviewOverlay').style.display = 'none';
+  }
+  $('orgPreviewClose').addEventListener('click', fecharPreview);
+  $('orgPreviewOverlay').addEventListener('click', function(e){ if(e.target === e.currentTarget) fecharPreview(); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && $('orgPreviewOverlay').style.display !== 'none') fecharPreview();
+  });
+
+  function visualizar(item){
+    fecharPreview();
+    var sessao = ++preview.ativo;
+    var body = $('orgPreviewBody');
+    $('orgPreviewName').textContent = item.file.name;
+    $('orgPreviewOverlay').style.display = 'flex';
+    var nota = document.createElement('div');
+    nota.className = 'org-preview-note';
+    nota.textContent = 'Carregando...';
+    body.appendChild(nota);
+
+    if(item.tipo === 'img'){
+      decodificarImagem(item.file).then(function(bmp){
+        if(sessao !== preview.ativo){ fecharBitmap(bmp); return; }
+        var canvas = document.createElement('canvas');
+        canvas.width = bmp.width || bmp.naturalWidth; canvas.height = bmp.height || bmp.naturalHeight;
+        canvas.getContext('2d').drawImage(bmp, 0, 0);
+        fecharBitmap(bmp);
+        nota.remove();
+        body.appendChild(canvas);
+      }).catch(function(){ nota.textContent = 'Não foi possível exibir esta imagem.'; });
+      return;
+    }
+
+    item.file.arrayBuffer().then(function(buf){
+      return pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+    }).then(function(pdf){
+      if(sessao !== preview.ativo){ pdf.destroy(); return; }
+      nota.textContent = plural(pdf.numPages, 'página', 'páginas');
+      var largura = Math.min(880, body.clientWidth - 32);
+      var n = 1;
+      function proxima(){
+        if(sessao !== preview.ativo || n > pdf.numPages){ if(sessao !== preview.ativo) pdf.destroy(); return; }
+        return pdf.getPage(n++).then(function(page){
+          var base = page.getViewport({ scale: 1 });
+          var dpr = Math.min(window.devicePixelRatio || 1, 2);
+          var vp = page.getViewport({ scale: (largura / base.width) * dpr });
+          var canvas = document.createElement('canvas');
+          canvas.width = vp.width; canvas.height = vp.height;
+          canvas.style.width = (vp.width / dpr) + 'px';
+          body.appendChild(canvas);
+          return page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+        }).then(proxima);
+      }
+      return proxima();
+    }).catch(function(){
+      if(sessao === preview.ativo) nota.textContent = 'Não foi possível exibir este PDF. Ele pode estar corrompido ou protegido por senha.';
+    });
+  }
+
+  // ---------- logo da Direcional ----------
+  function renderLogo(){
+    var box = $('orgLogo');
+    var logo = window.AudazLogos && window.AudazLogos.obter('direcional');
+    box.innerHTML = '';
+    if(logo){
+      var img = document.createElement('img');
+      img.alt = 'Direcional';
+      img.src = logo.dataUrl;
+      box.appendChild(img);
+      box.style.display = '';
+    } else if(window.admLogado){
+      box.innerHTML = '<div class="org-logo-missing">Logo da Direcional não cadastrada.<br><button type="button">Cadastrar na Área ADM</button></div>';
+      box.querySelector('button').addEventListener('click', function(){ window.goToPage('adm'); });
+      box.style.display = '';
+    } else {
+      box.style.display = 'none';
+    }
+  }
+  document.addEventListener('audaz:logos', renderLogo);
+  window.renderOrgLogo = renderLogo;
+
+  renderLogo();
+  render();
+})();
+</script>
+<script>
 // ===== ACESSO ADM =====
 // O sistema e aberto para todos; o login abaixo libera apenas a Area ADM.
 // A senha nao fica escrita aqui: guardamos apenas o hash SHA-256 dela.
@@ -3941,6 +5046,7 @@ render();
     document.getElementById('navAdm').style.display = soAdm;
     document.getElementById('profileMenu').style.display = soAdm;
     document.getElementById('btnSettings').style.display = soAdm;
+    if(window.renderOrgLogo) window.renderOrgLogo();
     document.getElementById('btnAdminLabel').textContent = window.admLogado ? 'Sair do ADM' : 'Entrar como ADM';
   }
 
