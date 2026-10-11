@@ -706,6 +706,21 @@
   .adm-section{ margin-bottom:28px; }
   .adm-section-title{ font-family:'Fraunces',serif; font-weight:600; font-size:17px; color:var(--ink); }
   .adm-section-sub{ font-size:12.5px; color:#8a8578; margin:3px 0 14px; }
+  .stat-grid{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; max-width:1040px; }
+  @media (max-width:760px){ .stat-grid{ grid-template-columns:1fr 1fr; } }
+  .stat-card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; }
+  .stat-live{ background:linear-gradient(120deg, var(--navy) 0%, var(--navy-3) 100%); border-color:var(--navy-3); }
+  .stat-label{ font-size:11.5px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:#8a8578; display:flex; align-items:center; gap:7px; }
+  .stat-live .stat-label{ color:var(--muted-on-navy); }
+  .stat-dot{ width:8px; height:8px; border-radius:50%; background:#3ecf6e; box-shadow:0 0 0 3px rgba(62,207,110,0.25); animation:statPulse 1.6s ease-in-out infinite; }
+  @keyframes statPulse{ 50%{ box-shadow:0 0 0 6px rgba(62,207,110,0.08); } }
+  .stat-value{ font-family:'Fraunces',serif; font-weight:600; font-size:30px; color:var(--ink); margin-top:6px; line-height:1; }
+  .stat-live .stat-value{ color:#fff; }
+  .stat-chart{ display:flex; align-items:flex-end; gap:8px; height:120px; max-width:1040px; margin-top:14px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px 10px; }
+  .stat-bar{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; gap:5px; min-width:0; }
+  .stat-bar i{ display:block; width:100%; max-width:46px; border-radius:6px 6px 2px 2px; background:linear-gradient(180deg, var(--gold), var(--gold-deep)); min-height:3px; }
+  .stat-bar b{ font-size:11px; color:var(--ink); }
+  .stat-bar span{ font-size:10.5px; color:#a29c8c; font-family:'JetBrains Mono',monospace; white-space:nowrap; }
   .logo-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:14px; max-width:1040px; }
   .logo-card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px; }
   .logo-preview{
@@ -1855,6 +1870,19 @@
           </div>
           <button type="button" class="btn-ghost" id="btnAdmSair">Sair do ADM</button>
         </div>
+        <div class="adm-section">
+          <div class="adm-section-title">Acessos ao sistema</div>
+          <div class="adm-section-sub">Cada computador ou celular conta como uma pessoa. Nenhum dado pessoal é registrado.</div>
+          <div class="stat-grid">
+            <div class="stat-card stat-live"><div class="stat-label"><span class="stat-dot"></span>Usando agora</div><div class="stat-value" id="statAgora">–</div></div>
+            <div class="stat-card"><div class="stat-label">Hoje</div><div class="stat-value" id="statHoje">–</div></div>
+            <div class="stat-card"><div class="stat-label">Últimos 7 dias</div><div class="stat-value" id="stat7">–</div></div>
+            <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="statTotal">–</div></div>
+          </div>
+          <div class="stat-chart" id="statChart"></div>
+          <div class="logo-status" id="statStatus"></div>
+        </div>
+
         <div class="adm-section">
           <div class="adm-section-title">Identidade visual / Logos</div>
           <div class="adm-section-sub">Logos usadas dentro do sistema. A imagem é guardada exatamente como enviada (PNG, JPG, WEBP ou SVG, até 1 MB) e exibida sem distorção.</div>
@@ -3910,6 +3938,7 @@ render();
     if(page === 'favoritos') renderFavoritosPage();
     if(page === 'documentos') renderDocTable();
     if(page === 'declaracoes' && window.ajustarFolha) window.ajustarFolha();
+    if(page === 'adm' && window.atualizarPainelAcessos) setTimeout(window.atualizarPainelAcessos, 0);
     window.scrollTo(0,0);
   }
   window.goToPage = goToPage;
@@ -4351,6 +4380,108 @@ render();
   };
 
   baixarDaNuvem();
+})();
+
+// ===== ACESSOS: contador anônimo de aparelhos =====
+// Cada navegador recebe um código aleatório (sem nome, e-mail ou IP).
+// estatisticas/visitantes/{id}   = primeira visita
+// estatisticas/dias/{AAAA-MM-DD}/{id} = true      (pessoas por dia)
+// estatisticas/online/{id}       = último sinal   (quem está com o sistema aberto)
+(function(){
+  var BASE = 'https://ilove-audaz-sistema-default-rtdb.firebaseio.com/estatisticas';
+  var CHAVE_ID = 'iloveaudaz_visitante';
+  var SINAL_MS = 60 * 1000;      // a cada 1 min avisa que continua usando
+  var ONLINE_MS = 150 * 1000;    // sem sinal há 2,5 min = saiu
+
+  var id;
+  try{ id = localStorage.getItem(CHAVE_ID); }catch(e){}
+  if(!id){
+    id = 'v' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    try{ localStorage.setItem(CHAVE_ID, id); }catch(e){}
+  }
+
+  function url(caminho, extra){ return BASE + '/' + caminho + '.json' + (extra || ''); }
+  function enviar(caminho, valor, metodo){
+    return fetch(url(caminho), { method: metodo || 'PUT', keepalive: true, headers:{ 'Content-Type':'application/json' },
+      body: valor === undefined ? undefined : JSON.stringify(valor) }).then(function(r){ return r.ok; }).catch(function(){ return false; });
+  }
+  function ler(caminho, extra){
+    return fetch(url(caminho, extra)).then(function(r){ if(!r.ok) throw new Error('bloqueado'); return r.json(); });
+  }
+  function dia(d){
+    d = d || new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  // ---- registro da visita e presença ----
+  var hojeMarcado = null;
+  function marcarDia(){
+    var hoje = dia();
+    if(hojeMarcado === hoje) return;
+    hojeMarcado = hoje;
+    enviar('dias/' + hoje + '/' + id, true);
+    try{
+      if(!localStorage.getItem(CHAVE_ID + '_registrado')){
+        enviar('visitantes/' + id, Date.now()).then(function(ok){ if(ok) localStorage.setItem(CHAVE_ID + '_registrado', '1'); });
+      }
+    }catch(e){}
+  }
+  var timer = null;
+  function sinal(){ marcarDia(); enviar('online/' + id, Date.now()); }
+  function ligar(){ if(timer) return; sinal(); timer = setInterval(sinal, SINAL_MS); }
+  function desligar(){ clearInterval(timer); timer = null; enviar('online/' + id, undefined, 'DELETE'); }
+
+  document.addEventListener('visibilitychange', function(){ document.visibilityState === 'visible' ? ligar() : desligar(); });
+  window.addEventListener('pagehide', desligar);
+  if(document.visibilityState === 'visible') ligar();
+
+  // ---- painel da Área ADM ----
+  var $ = function(i){ return document.getElementById(i); };
+  if(!$('statAgora')) return;
+
+  function contar(obj){ return obj && typeof obj === 'object' ? Object.keys(obj).length : 0; }
+  function painel(){
+    if(!$('page-adm').classList.contains('active')) return;
+    var agora = Date.now();
+    var dias = [];
+    for(var i = 6; i >= 0; i--){ var d = new Date(); d.setDate(d.getDate() - i); dias.push(d); }
+
+    Promise.all([
+      ler('online'),
+      Promise.all(dias.map(function(d){ return ler('dias/' + dia(d), '?shallow=true'); })),
+      ler('visitantes', '?shallow=true')
+    ]).then(function(r){
+      var online = r[0] || {};
+      var ativos = 0;
+      Object.keys(online).forEach(function(k){
+        if(agora - online[k] < ONLINE_MS) ativos++;
+        else if(agora - online[k] > 24 * 3600 * 1000) enviar('online/' + k, undefined, 'DELETE'); // limpa sinais antigos
+      });
+      var porDia = r[1].map(contar);
+      var semana = {};
+      r[1].forEach(function(o){ if(o) Object.keys(o).forEach(function(k){ semana[k] = 1; }); });
+
+      $('statAgora').textContent = ativos;
+      $('statHoje').textContent = porDia[6];
+      $('stat7').textContent = Object.keys(semana).length;
+      $('statTotal').textContent = contar(r[2]);
+
+      var max = Math.max.apply(null, porDia.concat([1]));
+      var nomes = ['dom','seg','ter','qua','qui','sex','sáb'];
+      $('statChart').innerHTML = dias.map(function(d, i){
+        var h = Math.round(porDia[i] / max * 100);
+        var rotulo = i === 6 ? 'hoje' : nomes[d.getDay()] + ' ' + d.getDate();
+        return '<div class="stat-bar" title="' + porDia[i] + ' pessoa(s)"><b>' + porDia[i] + '</b><i style="height:' + h + '%"></i><span>' + rotulo + '</span></div>';
+      }).join('');
+      $('statStatus').textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' }) + ' · atualiza sozinho a cada 20 segundos.';
+      $('statStatus').classList.remove('error');
+    }).catch(function(){
+      $('statStatus').textContent = 'Não foi possível ler os acessos. Confira se a regra "estatisticas" foi publicada no Firebase.';
+      $('statStatus').classList.add('error');
+    });
+  }
+  setInterval(painel, 20000);
+  window.atualizarPainelAcessos = painel;
 })();
 
 // ===== ADM: tela de identidade visual =====
