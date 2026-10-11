@@ -95,6 +95,7 @@
   .icon-btn{
     position:relative; width:38px; height:38px; border-radius:10px; background:var(--paper-dim);
     border:1px solid var(--line); color:#5c584e; display:flex; align-items:center; justify-content:center; cursor:pointer;
+    padding:0;
   }
   .icon-btn svg{ width:18px; height:18px; }
   .icon-btn:hover{ background:#fff; border-color:var(--gold); color:var(--gold-deep); }
@@ -147,7 +148,7 @@
     flex:1; display:grid; grid-template-columns:minmax(320px,420px) 1fr;
     background:var(--paper);
   }
-  @media (max-width:920px){ .layout{ grid-template-columns:1fr; } }
+  @media (max-width:920px){ .layout{ grid-template-columns:minmax(0,1fr); } .layout > *{ min-width:0; } .layout fieldset{ min-width:0; } }
 
   /* ===== FORM PANEL ===== */
   .panel{
@@ -391,7 +392,7 @@
   .mini-fav{
     position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%;
     background:#fff; border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
-    color:#c2bcac; cursor:pointer;
+    color:#c2bcac; cursor:pointer; padding:0;
   }
   .mini-fav svg{ width:14px; height:14px; }
   .mini-fav:hover{ border-color:var(--gold); color:var(--gold-deep); }
@@ -466,8 +467,8 @@
   .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:6px; }
 
   @media (max-width:920px){
-    .sidebar{ position:fixed; left:0; top:0; transform:translateX(-100%); transition:transform .2s; box-shadow:0 0 40px rgba(0,0,0,0.3); }
-    .sidebar.open{ transform:translateX(0); }
+    .sidebar{ position:fixed; left:0; top:0; transform:translateX(-100%); transition:transform .2s, box-shadow .2s; box-shadow:none; }
+    .sidebar.open{ transform:translateX(0); box-shadow:0 0 40px rgba(0,0,0,0.3); }
     .sidebar-toggle{ display:flex; align-items:center; }
     .home-grid{ grid-template-columns:1fr; }
     .page-body{ padding:20px 16px 40px; }
@@ -664,6 +665,9 @@
     display:flex; align-items:center; gap:12px; flex-wrap:wrap;
   }
   .org-bar-info{ flex:1; min-width:200px; font-size:12px; color:#8a8578; line-height:1.45; }
+  #orgClear{ display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+  .org-lbl-touch{ display:none; }
+  @media (hover:none) and (pointer:coarse){ .org-lbl-desk{ display:none; } .org-lbl-touch{ display:inline; } }
   .org-bar .btn-primary{ flex:0 1 auto; padding:15px 26px; letter-spacing:0.03em; text-transform:uppercase; }
   .org-bar .btn-primary:disabled{ opacity:0.55; cursor:default; }
   .org-progress{ margin-top:14px; display:none; }
@@ -734,6 +738,60 @@
     .org-replace{ height:38px; }
     .org-bar .btn-primary, .org-bar .btn-ghost, .org-results-head .btn-primary{ width:100%; flex:1 1 100%; }
     .org-result-row .btn-ghost{ width:100%; }
+  }
+
+  /* ===== CELULAR ===== */
+  @media (max-width:760px){
+    .preview-wrap{ padding:18px 14px 28px; }
+
+    .org-bar{
+      position:sticky; bottom:10px; z-index:15; flex-wrap:nowrap; padding:10px; gap:8px;
+      box-shadow:0 10px 30px rgba(16,20,35,0.18);
+    }
+    .org-bar-info{ display:none; }
+    .org-bar #orgClear{ flex:0 0 50px; width:50px; height:50px; padding:0; }
+    .org-bar #orgClear span{ display:none; }
+    .org-bar #orgGenerate{ flex:1 1 auto; width:auto; padding:14px 12px; font-size:12.5px; line-height:1.25; }
+    .org-hero{ padding:16px; }
+    .org-lot{ padding:14px; }
+
+    .pdf-tools-wrap{ padding:20px 16px 36px; }
+    .pdf-tools-intro{ margin-bottom:18px; }
+    .pdf-tools-grid{ grid-template-columns:1fr 1fr; gap:10px; }
+    .pdf-tool-card{ padding:14px; gap:8px; }
+    .pdf-tool-icon{ width:36px; height:36px; }
+    .pdf-tool-title{ font-size:14px; }
+    .pdf-tool-desc{ font-size:11.5px; }
+    .preview-toolbar{ margin-bottom:10px; }
+    .topbar-title{ overflow:hidden; text-overflow:ellipsis; min-width:0; }
+    .topbar-search{ flex:0 0 auto; padding:9px 10px; }
+    .topbar-actions{ gap:8px; }
+
+    .hero{ padding:22px 20px; min-height:0; border-radius:16px; margin-bottom:14px; }
+    .hero-text h1{ font-size:24px; margin-bottom:8px; }
+    .hero-text p{ font-size:13px; margin-bottom:14px; }
+    .hero-badges{ gap:6px; }
+    .hero-badge{ padding:6px 10px; font-size:11px; border-radius:999px; gap:6px; }
+    .hero-badge svg{ width:13px; height:13px; }
+
+    .cta-row{ gap:12px; margin-bottom:22px; }
+    .cta-card{ padding:16px; gap:14px; }
+    .cta-icon{ width:42px; height:42px; }
+    .cta-title{ font-size:16px; }
+    .cta-sub{ font-size:12px; }
+    .cta-feature{ flex-direction:column; align-items:stretch; padding:18px; gap:14px; }
+    .cta-feature-logo{ width:100%; height:74px; }
+    .cta-feature .cta-title{ font-size:20px; }
+    .cta-feature-steps{ gap:5px; }
+    .cta-feature-steps span{ font-size:10.5px; padding:4px 9px; }
+
+    .section-head{ gap:10px; }
+    .section-head .link-btn{ white-space:nowrap; flex-shrink:0; }
+    .mini-grid{ grid-template-columns:1fr 1fr; gap:10px; }
+    .mini-card{ padding:14px 12px; }
+    .mini-card .mini-icon{ width:34px; height:34px; margin-bottom:10px; }
+    .mini-card .mini-title{ font-size:13.5px; padding-right:24px; }
+    .mini-fav{ top:8px; right:8px; }
   }
 
   /* ===== PRINT ===== */
@@ -1769,7 +1827,7 @@
 
           <div class="org-bar">
             <div class="org-bar-info">Tudo é processado aqui no seu navegador: os documentos não são enviados para a internet. A ordem de cada lista é a ordem do PDF final.</div>
-            <button type="button" class="btn-ghost" id="orgClear">Limpar documentos</button>
+            <button type="button" class="btn-ghost" id="orgClear" aria-label="Limpar documentos" title="Limpar documentos"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg><span>Limpar documentos</span></button>
             <button type="button" class="btn-primary" id="orgGenerate">Gerar documentação Direcional</button>
           </div>
 
@@ -2444,6 +2502,8 @@ document.getElementById('btnPdf').addEventListener('click', async ()=>{
   btn.disabled = true;
   try{
     if(document.fonts && document.fonts.ready){ await document.fonts.ready; }
+    // No celular a folha é reduzida para caber na tela; o PDF é gerado no tamanho real.
+    if(window.pausarAjusteFolha) window.pausarAjusteFolha();
 
     const sheet = document.getElementById('sheet');
     const docModel = document.getElementById('docModel').value;
@@ -2532,6 +2592,7 @@ document.getElementById('btnPdf').addEventListener('click', async ()=>{
   } finally {
     btn.innerHTML = original;
     btn.disabled = false;
+    if(window.ajustarFolha) window.ajustarFolha();
   }
 });
 
@@ -2540,6 +2601,29 @@ let zoom = 1;
 const sheetWrap = document.getElementById('sheetWrap');
 document.getElementById('zoomIn').addEventListener('click', ()=>{ zoom = Math.min(1.3, zoom+0.1); sheetWrap.style.transform = `scale(${zoom})`; });
 document.getElementById('zoomOut').addEventListener('click', ()=>{ zoom = Math.max(0.6, zoom-0.1); sheetWrap.style.transform = `scale(${zoom})`; });
+
+// Celular: a folha mantém a largura de papel (760px) e é reduzida para caber na
+// tela, em vez de espremer o texto. Assim a prévia e o PDF ficam iguais ao computador.
+const LARGURA_FOLHA = 760;
+function ajustarFolha(){
+  if(window.innerWidth <= 920){
+    const area = sheetWrap.parentElement;
+    const cs = getComputedStyle(area);
+    const disponivel = area.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(disponivel <= 0) return; // página escondida: ajusta ao abrir
+    sheetWrap.style.width = LARGURA_FOLHA + 'px';
+    sheetWrap.style.maxWidth = 'none';
+    sheetWrap.style.zoom = Math.min(1, disponivel / LARGURA_FOLHA);
+  } else {
+    sheetWrap.style.width = '100%';
+    sheetWrap.style.maxWidth = LARGURA_FOLHA + 'px';
+    sheetWrap.style.zoom = '';
+  }
+}
+window.ajustarFolha = ajustarFolha;
+window.pausarAjusteFolha = function(){ sheetWrap.style.zoom = ''; };
+window.addEventListener('resize', ajustarFolha);
+ajustarFolha();
 
 function parseRendaValue(str){
   if(!str) return 0;
@@ -3825,6 +3909,7 @@ render();
     closeSidebarMobile();
     if(page === 'favoritos') renderFavoritosPage();
     if(page === 'documentos') renderDocTable();
+    if(page === 'declaracoes' && window.ajustarFolha) window.ajustarFolha();
     window.scrollTo(0,0);
   }
   window.goToPage = goToPage;
@@ -4442,7 +4527,7 @@ render();
       '<div class="org-lot-hint">' + L.exemplos + '</div>' +
       '<div class="org-drop" tabindex="0" role="button" aria-label="Adicionar arquivos em ' + L.titulo + '">' +
         '<div class="icon">' + ICON.upload + '</div>' +
-        '<div class="label">Arraste os arquivos aqui ou clique para selecionar</div>' +
+        '<div class="label"><span class="org-lbl-desk">Arraste os arquivos aqui ou clique para selecionar</span><span class="org-lbl-touch">Toque para adicionar arquivos</span></div>' +
         '<div class="hint">PDF, JPG, JPEG ou PNG · até 50 MB por arquivo</div></div>' +
       '<div class="org-lot-msg" data-msg></div>' +
       '<div class="org-list" data-list></div>';
