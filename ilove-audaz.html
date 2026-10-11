@@ -4186,6 +4186,32 @@ render();
         });
       });
     },
+    // Link do Google Drive (arquivo compartilhado com "Qualquer pessoa com o link")
+    // ou endereço direto de uma imagem. Guarda apenas o link; a imagem continua no Drive.
+    salvarLink: function(id, link, extra){
+      link = String(link || '').trim();
+      var m = link.match(/drive\.google\.com\/(?:file\/d\/|open\?(?:.*&)?id=|uc\?(?:.*&)?id=|thumbnail\?(?:.*&)?id=)([\w-]{10,})/) ||
+              link.match(/docs\.google\.com\/.*\/d\/([\w-]{10,})/);
+      var url;
+      if(m) url = 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w2000';
+      else if(/^https:\/\/\S+$/i.test(link)) url = link;
+      else return Promise.reject(new Error('Link inválido. Cole o link de compartilhamento do Google Drive.'));
+      return medir(url).then(function(dim){
+        if(!dim) throw new Error('Não foi possível abrir a imagem desse link. No Drive, deixe o arquivo como "Qualquer pessoa com o link" e tente novamente.');
+        var base = LOGOS_PADRAO[id] || {};
+        var atual = logos[id] || {};
+        var registro = {
+          nome: (extra && extra.nome) || atual.nome || base.nome || id,
+          uso: (extra && extra.uso) || atual.uso || base.uso || '',
+          dataUrl: url, link: link, fonte: 'link', tipo: m ? 'Google Drive' : 'Link',
+          largura: dim.w, altura: dim.h, bytes: 0, atualizadoEm: Date.now()
+        };
+        logos[id] = registro;
+        gravarCache();
+        avisar();
+        return enviarParaNuvem(id, registro);
+      });
+    },
     remover: function(id){
       delete logos[id];
       gravarCache();
@@ -4221,6 +4247,15 @@ render();
     else msg(acao + ' Porém não foi possível publicar na nuvem; por enquanto ela vale apenas neste navegador.', true);
   }
 
+  function colarLink(id, extra, atual){
+    var link = prompt('Cole o link do Google Drive da logo.\nNo Drive, o arquivo precisa estar como "Qualquer pessoa com o link".', atual || '');
+    if(!link || !link.trim()) return;
+    msg('Conferindo o link...');
+    window.AudazLogos.salvarLink(id, link, extra)
+      .then(function(ok){ resultadoNuvem(ok, 'Logo salva pelo link.'); })
+      .catch(function(err){ msg(err.message, true); });
+  }
+
   function escolherArquivo(id, extra){
     var input = document.createElement('input');
     input.type = 'file';
@@ -4246,13 +4281,15 @@ render();
         '<div class="logo-preview">' + (l ? '<img alt="">' : '<span class="none">Nenhuma logo cadastrada</span>') + '</div>' +
         '<div><div class="logo-name">' + esc(item.nome) + '</div>' +
         (item.uso ? '<div class="logo-use">Usada em: ' + esc(item.uso) + '</div>' : '') + '</div>' +
-        (l ? '<div class="logo-meta">' + esc(l.tipo) + ' · ' + l.largura + '×' + l.altura + ' px · ' + Math.max(1, Math.round(l.bytes/1024)) + ' KB<br>Atualizada em ' + esc(quando(l.atualizadoEm)) + '</div>' : '') +
+        (l ? '<div class="logo-meta">' + esc(l.tipo) + ' · ' + l.largura + '×' + l.altura + ' px' + (l.fonte === 'link' ? '' : ' · ' + Math.max(1, Math.round(l.bytes/1024)) + ' KB') + '<br>Atualizada em ' + esc(quando(l.atualizadoEm)) + '</div>' : '') +
         '<div class="logo-btns">' +
           '<button type="button" class="btn-primary" data-acao="enviar">' + (l ? 'Substituir' : 'Enviar logo') + '</button>' +
+          '<button type="button" class="btn-ghost" data-acao="link">Colar link do Drive</button>' +
           ((l || !item.padrao) ? '<button type="button" class="btn-ghost danger" data-acao="remover">Remover</button>' : '') +
         '</div>';
       if(l) card.querySelector('img').src = l.dataUrl;
       card.querySelector('[data-acao="enviar"]').addEventListener('click', function(){ escolherArquivo(item.id); });
+      card.querySelector('[data-acao="link"]').addEventListener('click', function(){ colarLink(item.id, null, l && l.link); });
       var rem = card.querySelector('[data-acao="remover"]');
       if(rem) rem.addEventListener('click', function(){
         if(!confirm('Remover a "' + item.nome + '"?')) return;
