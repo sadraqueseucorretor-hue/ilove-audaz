@@ -581,11 +581,19 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l3.09 6.26L22 9.77l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.64l-5-4.87 6.91-1.01z"/></svg>
         Modelos Favoritos
       </button>
+      <button type="button" class="side-link" data-page="adm" id="navAdm" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></svg>
+        Área ADM
+      </button>
     </nav>
     <div class="sidebar-bottom">
       <button type="button" class="side-link side-link-sm" id="btnHelp">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.3 9a2.7 2.7 0 0 1 5.2.9c0 1.8-2.5 2.1-2.5 3.9"/><path d="M12 17.5h.01"/></svg>
         Ajuda / Suporte
+      </button>
+      <button type="button" class="side-link side-link-sm" id="btnAdmin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <span id="btnAdminLabel">Entrar como ADM</span>
       </button>
       <button type="button" class="side-link side-link-sm" id="btnSettings">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="18" r="2"/></svg>
@@ -1535,6 +1543,21 @@
         </div>
       </section>
 
+      <section class="page" id="page-adm">
+        <div class="page-head">
+          <div>
+            <div class="page-head-title">Área ADM</div>
+            <div class="page-head-sub">Funções exclusivas do administrador</div>
+          </div>
+          <button type="button" class="btn-ghost" id="btnAdmSair">Sair do ADM</button>
+        </div>
+        <div class="empty-state">
+          <div class="empty-icon">🛡️</div>
+          <div class="empty-title">Nenhuma função ADM ainda</div>
+          <div class="empty-sub">As ferramentas exclusivas do administrador vão aparecer aqui.</div>
+        </div>
+      </section>
+
     </div>
   </div>
 
@@ -1563,6 +1586,25 @@
       <div class="modal-actions">
         <button type="button" class="btn-ghost" id="settingsCancel">Cancelar</button>
         <button type="button" class="btn-primary" id="settingsSave">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="admOverlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-title">Entrar como ADM</div>
+      <div class="field">
+        <label for="admUser">Usuário</label>
+        <input type="text" id="admUser" class="pdf-text-input" autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="admPass">Senha</label>
+        <input type="password" id="admPass" class="pdf-text-input" autocomplete="current-password">
+      </div>
+      <div id="admErr" style="color:#b23b3b; font-size:12.5px; min-height:18px;"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="admCancel">Cancelar</button>
+        <button type="button" class="btn-primary" id="admEntrar">Entrar</button>
       </div>
     </div>
   </div>
@@ -3499,10 +3541,11 @@ render();
   }
 
   // ---------- page navigation ----------
-  const PAGES = ['inicio','declaracoes','pdftools','documentos','favoritos'];
-  const PAGE_TITLES = { inicio:'Central de Documentos', declaracoes:'Declarações', pdftools:'Ferramentas PDF', documentos:'Meus Documentos', favoritos:'Modelos Favoritos' };
+  const PAGES = ['inicio','declaracoes','pdftools','documentos','favoritos','adm'];
+  const PAGE_TITLES = { inicio:'Central de Documentos', declaracoes:'Declarações', pdftools:'Ferramentas PDF', documentos:'Meus Documentos', favoritos:'Modelos Favoritos', adm:'Área ADM' };
 
   function goToPage(page){
+    if(page === 'adm' && !window.admLogado){ window.abrirLoginAdm(); return; }
     PAGES.forEach(p=>{
       const el = document.getElementById('page-'+p);
       if(el) el.classList.toggle('active', p===page);
@@ -3809,6 +3852,131 @@ render();
   renderNotifBadge();
   goToPage('inicio');
 
+})();
+</script>
+<script>
+// ===== ACESSO ADM =====
+// O sistema e aberto para todos; o login abaixo libera apenas a Area ADM.
+// A senha nao fica escrita aqui: guardamos apenas o hash SHA-256 dela.
+// Para trocar a senha, substitua o hash abaixo pelo da nova senha.
+(function(){
+  var ADM = { usuario: 'sadraque.ribeiro',
+    hash: '921a82bd68b5f65cedc9edfb7cc417ed0c315c4f431daf3456d528a14c1c8558' };
+  var DIAS_DE_SESSAO = 30;
+  var CHAVE = 'iloveaudaz_adm';
+
+  function utf8(str){
+    var out = '';
+    for(var i=0;i<str.length;i++){
+      var cp = str.codePointAt(i);
+      if(cp > 0xFFFF) i++;
+      if(cp < 0x80) out += String.fromCharCode(cp);
+      else if(cp < 0x800) out += String.fromCharCode(0xC0|cp>>6, 0x80|cp&63);
+      else if(cp < 0x10000) out += String.fromCharCode(0xE0|cp>>12, 0x80|(cp>>6)&63, 0x80|cp&63);
+      else out += String.fromCharCode(0xF0|cp>>18, 0x80|(cp>>12)&63, 0x80|(cp>>6)&63, 0x80|cp&63);
+    }
+    return out;
+  }
+
+  function sha256(ascii){
+    function rr(v,a){ return (v>>>a) | (v<<(32-a)); }
+    var mathPow = Math.pow, maxWord = mathPow(2,32), i, j, result = '';
+    var words = [], asciiBitLength = ascii.length*8;
+    var hash = sha256.h = sha256.h || [], k = sha256.k = sha256.k || [];
+    var primeCounter = k.length, isComposite = {};
+    for(var candidate = 2; primeCounter < 64; candidate++){
+      if(!isComposite[candidate]){
+        for(i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+        hash[primeCounter] = (mathPow(candidate,.5)*maxWord)|0;
+        k[primeCounter++] = (mathPow(candidate,1/3)*maxWord)|0;
+      }
+    }
+    ascii += '\x80';
+    while(ascii.length % 64 - 56) ascii += '\x00';
+    for(i = 0; i < ascii.length; i++){
+      j = ascii.charCodeAt(i);
+      if(j >> 8) return '';
+      words[i>>2] |= j << ((3 - i) % 4) * 8;
+    }
+    words[words.length] = ((asciiBitLength/maxWord)|0);
+    words[words.length] = (asciiBitLength);
+    for(j = 0; j < words.length;){
+      var w = words.slice(j, j += 16), oldHash = hash;
+      hash = hash.slice(0,8);
+      for(i = 0; i < 64; i++){
+        var w15 = w[i-15], w2 = w[i-2], a = hash[0], e = hash[4];
+        var temp1 = hash[7] + (rr(e,6)^rr(e,11)^rr(e,25)) + ((e&hash[5])^((~e)&hash[6])) + k[i]
+          + (w[i] = (i < 16) ? w[i] : (w[i-16] + (rr(w15,7)^rr(w15,18)^(w15>>>3)) + w[i-7]
+            + (rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
+        var temp2 = (rr(a,2)^rr(a,13)^rr(a,22)) + ((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+        hash = [(temp1+temp2)|0].concat(hash);
+        hash[4] = (hash[4]+temp1)|0;
+      }
+      for(i = 0; i < 8; i++) hash[i] = (hash[i]+oldHash[i])|0;
+    }
+    for(i = 0; i < 8; i++)
+      for(j = 3; j + 1; j--){
+        var b = (hash[i]>>(j*8))&255;
+        result += ((b < 16) ? 0 : '') + b.toString(16);
+      }
+    return result;
+  }
+
+  function sessaoValida(){
+    try{
+      var s = JSON.parse(localStorage.getItem(CHAVE));
+      return !!(s && s.usuario === ADM.usuario && s.expira > Date.now());
+    }catch(e){ return false; }
+  }
+
+  var overlay = document.getElementById('admOverlay');
+  var campoUser = document.getElementById('admUser');
+  var campoPass = document.getElementById('admPass');
+  var erro = document.getElementById('admErr');
+
+  function aplicarEstado(){
+    window.admLogado = sessaoValida();
+    document.getElementById('navAdm').style.display = window.admLogado ? '' : 'none';
+    document.getElementById('btnAdminLabel').textContent = window.admLogado ? 'Sair do ADM' : 'Entrar como ADM';
+  }
+
+  window.abrirLoginAdm = function(){
+    campoUser.value = ''; campoPass.value = ''; erro.textContent = '';
+    overlay.style.display = 'flex';
+    setTimeout(function(){ campoUser.focus(); }, 10);
+  };
+  function fechar(){ overlay.style.display = 'none'; }
+
+  function entrar(){
+    var usuario = campoUser.value.trim().toLowerCase();
+    if(usuario !== ADM.usuario || sha256(utf8(campoPass.value)) !== ADM.hash){
+      erro.textContent = 'Usuário ou senha incorretos.';
+      campoPass.value = ''; campoPass.focus();
+      return;
+    }
+    try{ localStorage.setItem(CHAVE, JSON.stringify({ usuario: usuario, expira: Date.now() + DIAS_DE_SESSAO*864e5 })); }catch(e){}
+    fechar();
+    aplicarEstado();
+    window.goToPage('adm');
+  }
+
+  function sair(){
+    try{ localStorage.removeItem(CHAVE); }catch(e){}
+    aplicarEstado();
+    window.goToPage('inicio');
+  }
+
+  document.getElementById('btnAdmin').addEventListener('click', function(){
+    if(window.admLogado) sair(); else window.abrirLoginAdm();
+  });
+  document.getElementById('btnAdmSair').addEventListener('click', sair);
+  document.getElementById('admEntrar').addEventListener('click', entrar);
+  document.getElementById('admCancel').addEventListener('click', fechar);
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) fechar(); });
+  campoPass.addEventListener('keydown', function(e){ if(e.key === 'Enter') entrar(); });
+  campoUser.addEventListener('keydown', function(e){ if(e.key === 'Enter') campoPass.focus(); });
+
+  aplicarEstado();
 })();
 </script>
 </body>
