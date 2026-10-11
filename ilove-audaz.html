@@ -595,7 +595,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
         <span id="btnAdminLabel">Entrar como ADM</span>
       </button>
-      <button type="button" class="side-link side-link-sm" id="btnSettings">
+      <button type="button" class="side-link side-link-sm" id="btnSettings" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="18" r="2"/></svg>
         Configurações
       </button>
@@ -628,7 +628,7 @@
             <div class="notif-list" id="notifList"></div>
           </div>
         </div>
-        <div class="profile-menu" id="profileMenu">
+        <div class="profile-menu" id="profileMenu" style="display:none;">
           <div class="avatar" id="avatarInitials">SR</div>
           <div class="profile-text">
             <div class="profile-name" id="profileNameLabel">Sadraque Ribeiro</div>
@@ -3936,7 +3936,11 @@ render();
 
   function aplicarEstado(){
     window.admLogado = sessaoValida();
-    document.getElementById('navAdm').style.display = window.admLogado ? '' : 'none';
+    var soAdm = window.admLogado ? '' : 'none';
+    // Perfil e Configuracoes do perfil so aparecem para o ADM logado
+    document.getElementById('navAdm').style.display = soAdm;
+    document.getElementById('profileMenu').style.display = soAdm;
+    document.getElementById('btnSettings').style.display = soAdm;
     document.getElementById('btnAdminLabel').textContent = window.admLogado ? 'Sair do ADM' : 'Entrar como ADM';
   }
 
