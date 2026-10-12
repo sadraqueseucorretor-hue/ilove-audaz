@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "AUDAZ CONNECT",
   "short_name": "Audaz Connect",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Captura a disponibilidade que o usuário já visualiza no Bora Vender e prepara os dados para o Audaz Squad.",
   "minimum_chrome_version": "111",
   "permissions": ["storage"],

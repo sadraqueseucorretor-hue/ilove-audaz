@@ -1,0 +1,87 @@
+{
+  "formato": "audaz.disponibilidade",
+  "versao": 1,
+  "geradoEm": "2026-10-12T05:45:00.000Z",
+  "origem": { "sistema": "Bora Vender", "ferramenta": "AUDAZ CONNECT", "versaoFerramenta": "0.3.0" },
+  "totalEmpreendimentos": 1,
+  "totalUnidades": 2,
+  "empreendimentos": [
+    {
+      "empreendimento": {
+        "id": "EXEMPLO-ID-EMPREENDIMENTO",
+        "nome": "Empreendimento Exemplo",
+        "dataEntrega": "2027-01-31",
+        "statusObra": "Em obras",
+        "cidade": "FORTALEZA",
+        "bairro": "Exemplo",
+        "totalUnidadesInformado": 2,
+        "totalBlocosInformado": 1
+      },
+      "capturadoEm": "2026-10-12T05:40:54.000Z",
+      "resumo": {
+        "totalUnidades": 2,
+        "totalBlocos": 1,
+        "porStatus": { "disponivel": 1, "reservado": 0, "vendido": 1, "indisponivel": 0, "outro": 0 }
+      },
+      "validacao": { "ok": true, "erros": [], "avisos": [] },
+      "unidades": [
+        {
+          "identificador": "BL01-0101",
+          "bloco": "BL-01",
+          "unidade": "0101",
+          "andar": 1,
+          "tipologia": "TIPO 2Q",
+          "tipo": "Apartamento",
+          "quartos": 2,
+          "suites": 0,
+          "banheiros": 1,
+          "areaPrivativaM2": 45.5,
+          "areaTotalM2": 90.1,
+          "vagas": 1,
+          "descricaoVaga": "DL-C",
+          "valorFinalKit": 250000,
+          "valorFinalCampanhaKit": null,
+          "valorDescontoCampanha": null,
+          "avaliacaoBancaria": 240000,
+          "valorMinimoSinal": 1000,
+          "bonusAdimplencia": 5000,
+          "status": { "codigo": "vendido", "rotulo": "Vendido", "original": "Vendida" },
+          "motivoBloqueio": null,
+          "descricao": "02 (dois) quartos, banheiro, sala de estar e jantar conjugadas.",
+          "observacoes": null,
+          "dataEntrega": "2027-01-31",
+          "atualizadoNoPortalEm": "2026-09-11T15:53:45Z",
+          "idPortal": "EXEMPLO-ID-UNIDADE-1"
+        },
+        {
+          "identificador": "BL01-0102",
+          "bloco": "BL-01",
+          "unidade": "0102",
+          "andar": 1,
+          "tipologia": "TIPO 2Q",
+          "tipo": "Apartamento",
+          "quartos": 2,
+          "suites": 0,
+          "banheiros": 1,
+          "areaPrivativaM2": 45.5,
+          "areaTotalM2": 90.1,
+          "vagas": 1,
+          "descricaoVaga": "DL-C",
+          "valorFinalKit": 251000,
+          "valorFinalCampanhaKit": null,
+          "valorDescontoCampanha": null,
+          "avaliacaoBancaria": 240000,
+          "valorMinimoSinal": 1000,
+          "bonusAdimplencia": 5000,
+          "status": { "codigo": "disponivel", "rotulo": "Disponível", "original": "Disponível" },
+          "motivoBloqueio": null,
+          "descricao": "02 (dois) quartos, banheiro, sala de estar e jantar conjugadas.",
+          "observacoes": null,
+          "dataEntrega": "2027-01-31",
+          "atualizadoNoPortalEm": "2026-09-11T15:53:44Z",
+          "idPortal": "EXEMPLO-ID-UNIDADE-2"
+        }
+      ]
+    }
+  ]
+}

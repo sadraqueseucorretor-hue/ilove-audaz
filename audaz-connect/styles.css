@@ -41,6 +41,9 @@ button { font: inherit; cursor: pointer; border-radius: 8px; }
 button:disabled { opacity: .45; cursor: not-allowed; }
 .primary { width: 100%; padding: 11px; border: 0; background: var(--gold); color: var(--navy); font-weight: 900; letter-spacing: .08em; }
 .primary:not(:disabled):hover { background: var(--gold-deep); }
+.secondary { width: 100%; padding: 9px; background: transparent; color: var(--gold); border: 1px solid var(--gold); font-weight: 800; letter-spacing: .06em; }
+.secondary:not(:disabled):hover { background: rgba(240, 168, 58, .12); }
+.export { margin-top: 10px; }
 .ghost { background: transparent; color: var(--ink-on-navy); border: 1px solid var(--line); padding: 6px 10px; }
 .ghost:hover { border-color: var(--gold); }
 .small { font-size: 11px; }

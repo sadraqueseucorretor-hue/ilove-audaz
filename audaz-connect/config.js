@@ -7,7 +7,7 @@
 (function (ns) {
   'use strict';
   ns.config = {
-    version: '0.2.0',
+    version: '0.3.0',
 
     // Fase 1: só um empreendimento-alvo, para validar antes da captura em massa.
     debugTarget: { nome: 'Conquista Maraponga' },

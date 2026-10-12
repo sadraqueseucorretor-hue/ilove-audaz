@@ -67,7 +67,6 @@ function renderReport(report) {
   $('out').hidden = false;
   $('json').textContent = JSON.stringify(report, null, 2);
   $('btnRaw').disabled = !report.espelho || !!report.espelho.erro;
-  $('btnPkg').disabled = report.resultado !== 'capturado';
 }
 
 async function refresh() {
@@ -94,6 +93,8 @@ const stamp = () => new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
 
 async function init() {
   $('ver').textContent = 'v' + chrome.runtime.getManifest().version;
+  renderExport();
+  chrome.storage.onChanged.addListener((ch) => { if (ch['ac:empreendimentos']) renderExport(); });
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || !PORTAL.test(tab.url || '')) {
     setDot('dotPortal', 'err');
@@ -148,12 +149,29 @@ $('btnDl').addEventListener('click', () => {
   if (lastReport) download('audaz-connect-debug-' + stamp() + '.json', lastReport);
 });
 
+const ddmmyyyy = () => { const d = new Date(); const p = (n) => String(n).padStart(2, '0'); return p(d.getDate()) + '-' + p(d.getMonth() + 1) + '-' + d.getFullYear(); };
+const slug = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+async function savedEntries() {
+  const { 'ac:empreendimentos': all } = await chrome.storage.local.get('ac:empreendimentos');
+  return Object.values(all || {});
+}
+
+async function renderExport() {
+  const entries = await savedEntries();
+  $('export').hidden = !entries.length;
+  if (!entries.length) return;
+  const unidades = entries.reduce((n, e) => n + e.unidades.length, 0);
+  $('expInfo').textContent = entries.length + ' empreendimento(s) · ' + unidades + ' unidades · ' +
+    entries.map((e) => e.empreendimento.nome + ' (' + fmtDate(e.capturadoEm) + ')').join(', ');
+}
+
 $('btnPkg').addEventListener('click', async () => {
-  const res = await send('AC_PACKAGE');
-  if (res && res.pacote) {
-    const slug = (res.pacote.empreendimento.nome || 'empreendimento').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    download('disponibilidade-' + slug + '-' + stamp() + '.json', res.pacote);
-  } else $('pMsg').textContent = 'Nenhuma captura válida em memória nesta aba.';
+  const entries = await savedEntries();
+  if (!entries.length) return;
+  const arquivo = self.AudazConnect.normalize.buildExport(entries, chrome.runtime.getManifest().version);
+  const nome = entries.length === 1 ? slug(entries[0].empreendimento.nome) : 'audaz';
+  download('disponibilidade-' + nome + '-' + ddmmyyyy() + '.json', arquivo);
 });
 
 $('btnRaw').addEventListener('click', async () => {

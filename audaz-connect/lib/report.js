@@ -67,7 +67,6 @@
         capturadoEm: new Date(rec.at).toISOString()
       });
       info.normalizado = {
-        schema: pacote.schema,
         capturadoEm: pacote.capturadoEm,
         empreendimento: pacote.empreendimento,
         resumo: pacote.resumo,
@@ -153,8 +152,8 @@
       }
       if (pacote) {
         console.table(pacote.unidades.map((u) => ({
-          bloco: u.bloco, unidade: u.unidade, andar: u.andar, tipologia: u.tipologia, area: u.areaPrivativa,
-          vagas: u.vagas, valorFinalKit: u.valorFinalKit, avaliacao: u.avaliacaoBancaria, status: u.status.texto
+          bloco: u.bloco, unidade: u.unidade, andar: u.andar, tipologia: u.tipologia, area: u.areaPrivativaM2,
+          vagas: u.vagas, valorFinalKit: u.valorFinalKit, avaliacao: u.avaliacaoBancaria, status: u.status.rotulo
         })));
       }
     }

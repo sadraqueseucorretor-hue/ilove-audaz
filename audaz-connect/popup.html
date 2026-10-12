@@ -40,11 +40,15 @@
     <button class="ghost small" id="btnCancel" hidden>Parar de escutar</button>
   </section>
 
+  <section class="export" id="export" hidden>
+    <button class="secondary" id="btnPkg">EXPORTAR JSON PARA O AUDAZ</button>
+    <p class="msg" id="expInfo"></p>
+  </section>
+
   <section class="out" id="out" hidden>
     <div class="actions">
       <button class="ghost small" id="btnCopy">Copiar relatório</button>
       <button class="ghost small" id="btnDl">Baixar relatório</button>
-      <button class="ghost small" id="btnPkg">Baixar normalizado</button>
       <button class="ghost small" id="btnRaw">Baixar espelho bruto</button>
     </div>
     <details>
@@ -54,6 +58,8 @@
   </section>
 
   <footer>Usa somente a sessão já aberta no seu navegador. Nenhuma senha ou cookie é lido ou enviado.</footer>
+  <script src="config.js"></script>
+  <script src="lib/normalize.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

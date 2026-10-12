@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "audaz.disponibilidade/v1",
+  "title": "Audaz — Disponibilidade de unidades (v1)",
+  "description": "Arquivo gerado pelo AUDAZ CONNECT a partir do espelho de vendas do Bora Vender. Campos ausentes no portal vêm como null; nada é inventado.",
+  "type": "object",
+  "required": ["formato", "versao", "geradoEm", "origem", "totalEmpreendimentos", "totalUnidades", "empreendimentos"],
+  "properties": {
+    "formato": { "const": "audaz.disponibilidade" },
+    "versao": { "const": 1 },
+    "geradoEm": { "type": "string", "format": "date-time", "description": "Quando o arquivo foi exportado (UTC)." },
+    "origem": {
+      "type": "object",
+      "required": ["sistema", "ferramenta", "versaoFerramenta"],
+      "properties": {
+        "sistema": { "const": "Bora Vender" },
+        "ferramenta": { "const": "AUDAZ CONNECT" },
+        "versaoFerramenta": { "type": "string" }
+      }
+    },
+    "totalEmpreendimentos": { "type": "integer", "minimum": 0 },
+    "totalUnidades": { "type": "integer", "minimum": 0 },
+    "empreendimentos": { "type": "array", "items": { "$ref": "#/$defs/empreendimentoCapturado" } }
+  },
+  "$defs": {
+    "numeroOuNulo": { "type": ["number", "null"] },
+    "textoOuNulo": { "type": ["string", "null"] },
+    "dataOuNula": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "AAAA-MM-DD" },
+
+    "empreendimentoCapturado": {
+      "type": "object",
+      "required": ["empreendimento", "capturadoEm", "resumo", "validacao", "unidades"],
+      "properties": {
+        "empreendimento": {
+          "type": "object",
+          "required": ["id", "nome"],
+          "properties": {
+            "id": { "type": ["string", "null"], "description": "ID do empreendimento no portal (idEmpreendimentoSales). Use como chave única." },
+            "nome": { "type": "string" },
+            "dataEntrega": { "$ref": "#/$defs/dataOuNula" },
+            "statusObra": { "$ref": "#/$defs/textoOuNulo" },
+            "cidade": { "$ref": "#/$defs/textoOuNulo" },
+            "bairro": { "$ref": "#/$defs/textoOuNulo" },
+            "totalUnidadesInformado": { "$ref": "#/$defs/numeroOuNulo" },
+            "totalBlocosInformado": { "$ref": "#/$defs/numeroOuNulo" }
+          }
+        },
+        "capturadoEm": { "type": "string", "format": "date-time", "description": "Quando o portal entregou estes dados (UTC). Base para 'atualizado há X minutos'." },
+        "resumo": {
+          "type": "object",
+          "required": ["totalUnidades", "totalBlocos", "porStatus"],
+          "properties": {
+            "totalUnidades": { "type": "integer" },
+            "totalBlocos": { "type": "integer" },
+            "porStatus": {
+              "type": "object",
+              "required": ["disponivel", "reservado", "vendido", "indisponivel", "outro"],
+              "additionalProperties": { "type": "integer" }
+            }
+          }
+        },
+        "validacao": {
+          "type": "object",
+          "required": ["ok", "erros", "avisos"],
+          "properties": {
+            "ok": { "type": "boolean" },
+            "erros": { "type": "array", "items": { "type": "string" } },
+            "avisos": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "unidades": { "type": "array", "items": { "$ref": "#/$defs/unidade" } }
+      }
+    },
+
+    "unidade": {
+      "type": "object",
+      "required": ["identificador", "bloco", "unidade", "andar", "status"],
+      "properties": {
+        "identificador": { "type": "string", "description": "Código único da unidade no empreendimento. Ex.: BL01-0102." },
+        "bloco": { "$ref": "#/$defs/textoOuNulo", "description": "Ex.: BL-01" },
+        "unidade": { "$ref": "#/$defs/textoOuNulo", "description": "Ex.: 0102 (derivado do identificador)" },
+        "andar": { "$ref": "#/$defs/numeroOuNulo" },
+        "tipologia": { "$ref": "#/$defs/textoOuNulo", "description": "Ex.: TIPO 2Q" },
+        "tipo": { "$ref": "#/$defs/textoOuNulo", "description": "Ex.: Apartamento" },
+        "quartos": { "$ref": "#/$defs/numeroOuNulo" },
+        "suites": { "$ref": "#/$defs/numeroOuNulo" },
+        "banheiros": { "$ref": "#/$defs/numeroOuNulo" },
+        "areaPrivativaM2": { "$ref": "#/$defs/numeroOuNulo" },
+        "areaTotalM2": { "$ref": "#/$defs/numeroOuNulo" },
+        "vagas": { "$ref": "#/$defs/numeroOuNulo" },
+        "descricaoVaga": { "$ref": "#/$defs/textoOuNulo" },
+        "valorFinalKit": { "$ref": "#/$defs/numeroOuNulo", "description": "Em reais, sem formatação. Ex.: 306900" },
+        "valorFinalCampanhaKit": { "$ref": "#/$defs/numeroOuNulo" },
+        "valorDescontoCampanha": { "$ref": "#/$defs/numeroOuNulo" },
+        "avaliacaoBancaria": { "$ref": "#/$defs/numeroOuNulo" },
+        "valorMinimoSinal": { "$ref": "#/$defs/numeroOuNulo" },
+        "bonusAdimplencia": { "$ref": "#/$defs/numeroOuNulo" },
+        "status": {
+          "type": "object",
+          "required": ["codigo", "rotulo", "original"],
+          "properties": {
+            "codigo": { "enum": ["disponivel", "reservado", "vendido", "indisponivel", "outro"], "description": "Use para filtros e cores." },
+            "rotulo": { "$ref": "#/$defs/textoOuNulo", "description": "Use para exibir." },
+            "original": { "$ref": "#/$defs/textoOuNulo", "description": "Texto exato do portal." }
+          }
+        },
+        "motivoBloqueio": { "$ref": "#/$defs/textoOuNulo" },
+        "descricao": { "$ref": "#/$defs/textoOuNulo" },
+        "observacoes": { "$ref": "#/$defs/textoOuNulo" },
+        "dataEntrega": { "$ref": "#/$defs/dataOuNula" },
+        "atualizadoNoPortalEm": { "$ref": "#/$defs/textoOuNulo" },
+        "idPortal": { "$ref": "#/$defs/textoOuNulo", "description": "idUnidadeSales" }
+      }
+    }
+  }
+}

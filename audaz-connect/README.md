@@ -75,5 +75,25 @@ O relatório também lista as últimas requisições observadas, o que ajuda a a
 | avaliacaoBancaria | `valorAvalBancaria` |
 | status | `statusUnidade` → disponível / reservado / vendido / indisponível / outro |
 
-O botão **Baixar normalizado** gera o pacote `disponibilidade-<empreendimento>-*.json`
-(também salvo localmente em `chrome.storage.local`, chave `ac:lastPackage`).
+## Arquivo para importar no Audaz
+
+Botão **EXPORTAR JSON PARA O AUDAZ** → `disponibilidade-conquista-maraponga-12-10-2026.json`
+(com vários empreendimentos: `disponibilidade-audaz-12-10-2026.json`).
+
+Cada captura válida fica salva no Chrome (`chrome.storage.local`, chave `ac:empreendimentos`),
+um registro por empreendimento, substituído na captura seguinte. O export junta todos.
+
+- Contrato completo: [`schema/audaz-disponibilidade-v1.schema.json`](schema/audaz-disponibilidade-v1.schema.json)
+- Exemplo ilustrativo (valores fictícios): [`schema/exemplo.json`](schema/exemplo.json)
+
+Como o sistema deve ler:
+
+1. Conferir `formato === "audaz.disponibilidade"` e `versao === 1`; recusar outro formato.
+2. Para cada item de `empreendimentos`: chave única = `empreendimento.id`.
+   Substituir as unidades anteriores daquele empreendimento pelas novas (não somar).
+3. Se `validacao.ok === false`, não importar aquele empreendimento e mostrar `validacao.erros`.
+4. Filtros e cores pelo `status.codigo` (`disponivel`, `reservado`, `vendido`, `indisponivel`, `outro`);
+   texto na tela pelo `status.rotulo`.
+5. "Atualizado há X minutos" a partir de `capturadoEm`.
+6. Valores em reais como número puro (`306900`); áreas em m²; datas `AAAA-MM-DD`; campos ausentes = `null`.
+7. Escapar todo texto antes de exibir (ele vem de um sistema externo).

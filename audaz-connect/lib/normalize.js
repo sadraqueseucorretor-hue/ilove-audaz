@@ -15,7 +15,8 @@
   'use strict';
   const cfg = ns.config;
 
-  const SCHEMA = 'audaz.disponibilidade/v1';
+  const FORMATO = 'audaz.disponibilidade';
+  const VERSAO = 1;
 
   // Campos do portal que a normalização exige em cada unidade.
   const REQUIRED_KEYS = ['identificador', 'blocoEtapa', 'andar', 'statusUnidade', 'valorFinalKit'];
@@ -34,10 +35,25 @@
     return s ? s.slice(0, max || 300) : null;
   };
 
+  const STATUS_ROTULO = { disponivel: 'Disponível', reservado: 'Reservado', vendido: 'Vendido', indisponivel: 'Indisponível' };
+
+  /** { codigo: categoria fixa do Audaz, rotulo: texto para exibir, original: texto do portal } */
   function statusOf(raw) {
-    const texto = txt(raw, 60);
-    const rule = texto && cfg.statusMap.find((r) => r.re.test(texto));
-    return { categoria: rule ? rule.categoria : 'outro', texto };
+    const original = txt(raw, 60);
+    const rule = original && cfg.statusMap.find((r) => r.re.test(original));
+    const codigo = rule ? rule.categoria : 'outro';
+    return { codigo, rotulo: STATUS_ROTULO[codigo] || original, original };
+  }
+
+  /** Data no padrão AAAA-MM-DD. Aceita "2027-01-31T03:00:00Z" e "31/01/2027". */
+  function isoDate(v) {
+    const s = txt(v, 40);
+    if (!s) return null;
+    let m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if (m) return m[1] + '-' + m[2] + '-' + m[3];
+    m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s);
+    if (m) return m[3] + '-' + m[2] + '-' + m[1];
+    return null;
   }
 
   function unidadeFromIdentificador(id) {
@@ -62,18 +78,17 @@
   function normalizeUnit(u) {
     const identificador = txt(u.identificador, 40);
     return {
-      idSales: txt(u.idUnidadeSales, 40),
       identificador,
       bloco: txt(u.blocoEtapa, 40),
       unidade: unidadeFromIdentificador(identificador),
       andar: num(u.andar),
       tipologia: txt(u.tipoPlanta, 80),
-      tipoUnidade: txt(u.tipoUnidade, 40),
+      tipo: txt(u.tipoUnidade, 40),
       quartos: num(u.numQuartos),
       suites: num(u.numSuites),
       banheiros: num(u.numBanhos),
-      areaPrivativa: num(u.areaPrivativaPrincipal),
-      areaTotal: num(u.areaRealTotal),
+      areaPrivativaM2: num(u.areaPrivativaPrincipal),
+      areaTotalM2: num(u.areaRealTotal),
       vagas: num(u.qtdeVagas),
       descricaoVaga: txt(u.descVagas, 40),
       valorFinalKit: num(u.valorFinalKit),
@@ -86,8 +101,9 @@
       motivoBloqueio: txt(u.motivoBloqueioUnidade, 120),
       descricao: txt(u.descricao, 400),
       observacoes: txt(u.outrasDescricoes, 300),
-      dataEntrega: txt(u.dataEntregaObra || u.dataEntrega, 40),
-      alteradoNoPortalEm: txt(u.dataAlteracao, 40)
+      dataEntrega: isoDate(u.dataEntregaObra || u.dataEntrega),
+      atualizadoNoPortalEm: txt(u.dataAlteracao, 40),
+      idPortal: txt(u.idUnidadeSales, 40)
     };
   }
 
@@ -96,7 +112,7 @@
     return {
       id,
       nome: txt(rec && rec.nomeEmpreendimento, 120) || nomeFallback,
-      dataEntrega: txt(rec && rec.dataTerminoObra, 20),
+      dataEntrega: isoDate(rec && rec.dataTerminoObra),
       statusObra: txt(rec && rec.statusObra, 40),
       cidade: txt(rec && rec.cidadeObra, 60),
       bairro: txt(rec && rec.bairroObra, 60),
@@ -127,14 +143,14 @@
     }
     const semValor = unidades.filter((u) => u.valorFinalKit == null).length;
     if (semValor) avisos.push(semValor + ' unidade(s) sem valorFinalKit');
-    const outros = [...new Set(unidades.filter((u) => u.status.categoria === 'outro').map((u) => u.status.texto))];
+    const outros = [...new Set(unidades.filter((u) => u.status.codigo === 'outro').map((u) => u.status.original))];
     if (outros.length) avisos.push('status sem categoria definida (exibidos como texto original): ' + outros.join(', '));
 
     return { ok: erros.length === 0, erros, avisos };
   }
 
   /**
-   * Gera o pacote normalizado de um empreendimento.
+   * Normaliza o espelho de UM empreendimento.
    * @param {object} espelhoJson   resposta do obter-espelho-de-vendas
    * @param {object} ctx           { id, nome, empreendimentoRecord, capturadoEm }
    */
@@ -144,23 +160,34 @@
     const empreendimento = normalizeEmpreendimento(ctx.empreendimentoRecord, ctx.id, ctx.nome);
     if (!empreendimento.dataEntrega) empreendimento.dataEntrega = (unidades.find((u) => u.dataEntrega) || {}).dataEntrega || null;
 
-    const porStatus = {};
-    const porStatusOriginal = {};
-    for (const u of unidades) {
-      porStatus[u.status.categoria] = (porStatus[u.status.categoria] || 0) + 1;
-      porStatusOriginal[u.status.texto] = (porStatusOriginal[u.status.texto] || 0) + 1;
-    }
+    const porStatus = { disponivel: 0, reservado: 0, vendido: 0, indisponivel: 0, outro: 0 };
+    for (const u of unidades) porStatus[u.status.codigo]++;
 
     return {
-      schema: SCHEMA,
-      fonte: { portal: 'Bora Vender', operacao: 'unidade/obter-espelho-de-vendas', derivados: ['unidade (sufixo do identificador)'] },
-      capturadoEm: ctx.capturadoEm,
       empreendimento,
-      resumo: { total: unidades.length, blocos: espelhoJson.blocos.length, porStatus, porStatusOriginal },
+      capturadoEm: ctx.capturadoEm,
+      resumo: { totalUnidades: unidades.length, totalBlocos: espelhoJson.blocos.length, porStatus },
       validacao: validate(raw, unidades, empreendimento, espelhoJson.blocos.length),
       unidades
     };
   }
 
-  ns.normalize = { SCHEMA, normalize, extractUnits };
+  /**
+   * Arquivo final para importar no Audaz: sempre o mesmo envelope, com 1 ou
+   * vários empreendimentos. Formato documentado em schema/.
+   */
+  function buildExport(entries, versaoExtensao) {
+    const empreendimentos = entries.slice().sort((a, b) => String(a.empreendimento.nome).localeCompare(String(b.empreendimento.nome), 'pt-BR'));
+    return {
+      formato: FORMATO,
+      versao: VERSAO,
+      geradoEm: new Date().toISOString(),
+      origem: { sistema: 'Bora Vender', ferramenta: 'AUDAZ CONNECT', versaoFerramenta: versaoExtensao || cfg.version },
+      totalEmpreendimentos: empreendimentos.length,
+      totalUnidades: empreendimentos.reduce((n, e) => n + e.unidades.length, 0),
+      empreendimentos
+    };
+  }
+
+  ns.normalize = { FORMATO, VERSAO, normalize, buildExport, extractUnits };
 })(self.AudazConnect);
