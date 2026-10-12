@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>AUDAZ CONNECT</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <div class="brand">AUDAZ <span>CONNECT</span></div>
+      <div class="ver" id="ver">v0.1.0</div>
+    </div>
+    <span class="pill" title="Fase 1: captura de teste de um único empreendimento">DEBUG</span>
+  </header>
+
+  <section class="status">
+    <div class="row"><span class="dot" id="dotPortal"></span><span id="txtPortal">Verificando aba…</span></div>
+    <div class="row"><span class="dot" id="dotSessao"></span><span id="txtSessao">Sessão: —</span></div>
+  </section>
+
+  <section class="stats">
+    <div><small>Última captura</small><b id="stLast">—</b></div>
+    <div><small>Respostas observadas</small><b id="stObs">—</b></div>
+    <div><small>Espelhos observados</small><b id="stEsp">—</b></div>
+    <div><small>Unidades (candidatas)</small><b id="stUni">—</b></div>
+  </section>
+
+  <section class="mode">
+    <label class="radio"><input type="radio" name="mode" checked> <span><b>DEBUG</b> · somente <em id="alvo">Conquista Maraponga</em></span></label>
+    <label class="radio off" title="Liberado na Fase 2, depois de validar o DEBUG"><input type="radio" name="mode" disabled> <span><b>Todos os empreendimentos</b> · Fase 2</span></label>
+  </section>
+
+  <button class="primary" id="btnPull" disabled>PUXAR DISPONIBILIDADE</button>
+
+  <section class="progress" id="progress" hidden>
+    <div class="ptitle">Capturando disponibilidade…</div>
+    <ul><li><span id="pName">Conquista Maraponga</span><span class="pst" id="pState">aguardando</span></li></ul>
+    <p class="msg" id="pMsg"></p>
+    <button class="ghost small" id="btnCancel" hidden>Parar de escutar</button>
+  </section>
+
+  <section class="out" id="out" hidden>
+    <div class="actions">
+      <button class="ghost small" id="btnCopy">Copiar relatório</button>
+      <button class="ghost small" id="btnDl">Baixar relatório</button>
+      <button class="ghost small" id="btnRaw">Baixar espelho bruto</button>
+    </div>
+    <details>
+      <summary>Ver JSON capturado</summary>
+      <pre id="json"></pre>
+    </details>
+  </section>
+
+  <footer>Usa somente a sessão já aberta no seu navegador. Nenhuma senha ou cookie é lido ou enviado.</footer>
+  <script src="popup.js"></script>
+</body>
+</html>

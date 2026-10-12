@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "AUDAZ CONNECT",
+  "short_name": "Audaz Connect",
+  "version": "0.1.0",
+  "description": "Captura a disponibilidade que o usuário já visualiza no Bora Vender e prepara os dados para o Audaz Squad.",
+  "minimum_chrome_version": "111",
+  "permissions": ["storage"],
+  "host_permissions": ["https://boravender.app.br/*", "https://*.boravender.app.br/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "AUDAZ CONNECT",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://boravender.app.br/*", "https://*.boravender.app.br/*"],
+      "js": ["injected.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://boravender.app.br/*", "https://*.boravender.app.br/*"],
+      "js": [
+        "config.js",
+        "lib/redact.js",
+        "lib/schema.js",
+        "lib/discovery.js",
+        "lib/normalize.js",
+        "lib/report.js",
+        "lib/page-ui.js",
+        "content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}
