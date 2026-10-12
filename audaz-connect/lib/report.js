@@ -37,7 +37,7 @@
     return { ocorrencias, idsCandidatos: ids };
   }
 
-  function describeEspelho(rec, link) {
+  function describeEspelho(rec, link, jsonRecs, targetName) {
     const base = {
       url: shortUrl(rec.url),
       metodo: rec.method,
@@ -47,32 +47,38 @@
       observadoEm: new Date(rec.at).toISOString(),
       vinculoComAlvo: link
     };
-    if (rec.status >= 400 || rec.status === 0) return Object.assign(base, { erro: 'portal respondeu com status ' + rec.status });
-    if (!rec.json) return Object.assign(base, { erro: rec.parseError || 'resposta sem JSON' });
+    if (rec.status >= 400 || rec.status === 0) return { info: Object.assign(base, { erro: 'portal respondeu com status ' + rec.status }), pacote: null };
+    if (!rec.json) return { info: Object.assign(base, { erro: rec.parseError || 'resposta sem JSON' }), pacote: null };
 
     const grupos = D.findObjectArrays(rec.json);
     const principal = grupos[0] || null;
-    const out = Object.assign(base, {
-      estrutura: S.describe(redactDeep(rec.json), 0, 4),
-      listasEncontradas: grupos.slice(0, 8).map((g) => ({ caminho: g.padrao, listas: g.ocorrencias, itens: g.totalItens, chaves: g.chaves }))
+    const info = Object.assign(base, {
+      listasEncontradas: grupos.slice(0, 8).map((g) => ({ caminho: g.padrao, listas: g.ocorrencias, itens: g.totalItens })),
+      perfilDosCampos: principal ? S.profileArray(D.itemsOfGroup(rec.json, principal)) : []
     });
-    if (principal) {
-      const items = D.itemsOfGroup(rec.json, principal);
-      const perfil = S.profileArray(items);
-      out.unidadesCandidatas = {
-        observacao: 'Maior lista de objetos da resposta. Confirmar se cada item é de fato uma unidade.',
-        caminho: principal.padrao,
-        total: items.length,
-        perfilDosCampos: perfil,
-        amostra: redactDeep(items.slice(0, 3))
+
+    const id = D.espelhoId(rec);
+    let pacote = null;
+    try {
+      pacote = N.normalize(rec.json, {
+        id,
+        nome: targetName,
+        empreendimentoRecord: id ? D.findEmpreendimentoRecord(jsonRecs, id) : null,
+        capturadoEm: new Date(rec.at).toISOString()
+      });
+      info.normalizado = {
+        schema: pacote.schema,
+        capturadoEm: pacote.capturadoEm,
+        empreendimento: pacote.empreendimento,
+        resumo: pacote.resumo,
+        validacao: pacote.validacao,
+        amostra: pacote.unidades.slice(0, 5)
       };
-      out.sugestoesDeMapeamento = {
-        observacao: 'SUGESTÕES por nome de campo — não confirmadas. Validar com a amostra acima.',
-        campos: N.suggestMapping(perfil)
-      };
-      out.normalizacao = N.normalize(items);
+      if (!pacote.validacao.ok) info.erro = 'validação falhou: ' + pacote.validacao.erros.join('; ');
+    } catch (e) {
+      info.erro = 'normalização falhou: ' + (e && e.message);
     }
-    return out;
+    return { info, pacote };
   }
 
   function build(state) {
@@ -83,7 +89,9 @@
     const espelhos = state.records.filter(D.isEspelho).map((rec) => ({ rec, link: D.linkToTarget(rec, targetName, alvo.idsCandidatos) }));
     const confirmados = espelhos.filter((e) => e.link.confirmado);
     const escolhido = (confirmados.length ? confirmados : espelhos).slice(-1)[0] || null;
-    const espelho = escolhido ? describeEspelho(escolhido.rec, escolhido.link) : null;
+    const desc = escolhido ? describeEspelho(escolhido.rec, escolhido.link, jsonRecs, targetName) : null;
+    const espelho = desc ? desc.info : null;
+    state.lastPackage = desc && desc.pacote && !espelho.erro && escolhido.link.confirmado ? desc.pacote : null;
 
     let resultado, motivo;
     if (!escolhido) {
@@ -119,30 +127,35 @@
       espelho,
       outrosEspelhosObservados: espelhos.filter((e) => e !== escolhido).map((e) => ({ url: shortUrl(e.rec.url), status: e.rec.status, vinculo: e.link })),
       respostasRelevantes: state.records
-        .filter((r) => !D.isEspelho(r) && cfg.relevantUrlPattern.test(r.url))
+        .filter((r) => !D.isEspelho(r) && D.isPortalApi(r.url) && cfg.relevantUrlPattern.test(r.url))
         .slice(-20)
         .map((r) => ({ metodo: r.method, url: shortUrl(r.url), status: r.status, tamanhoBytes: r.size, chavesRaiz: r.json && !Array.isArray(r.json) ? Object.keys(r.json).slice(0, 25) : r.json ? '[array(' + r.json.length + ')]' : null })),
       requisicoesObservadas: {
         total: state.observed.length,
-        ultimas: state.observed.slice(-60).map((m) => ({ metodo: m.method, url: shortUrl(m.url), status: m.status, tamanhoBytes: m.size, json: m.isJson }))
+        ultimasDoPortal: state.observed.filter((m) => D.isPortalApi(m.url)).slice(-40).map((m) => ({ metodo: m.method, url: shortUrl(m.url), status: m.status, tamanhoBytes: m.size, json: m.isJson }))
       }
     };
   }
 
-  function log(report) {
+  function log(report, pacote) {
     const title = 'AUDAZ CONNECT · DEBUG · ' + report.alvo.nome + ' · ' + report.resultado.toUpperCase();
     console.groupCollapsed('%c' + title, 'background:#101c3f;color:#f0a83a;font-weight:700;padding:3px 8px;border-radius:4px');
     console.log('Motivo:', report.motivo);
     console.log('Sessão:', report.sessao);
     console.log('Alvo nas respostas do portal:', report.alvo.encontradoNasRespostas);
     if (report.espelho) {
-      console.log('Espelho:', { url: report.espelho.url, metodo: report.espelho.metodo, status: report.espelho.status, corpoRequisicao: report.espelho.corpoRequisicao, vinculo: report.espelho.vinculoComAlvo });
-      if (report.espelho.listasEncontradas) console.table(report.espelho.listasEncontradas.map((l) => ({ caminho: l.caminho, listas: l.listas, itens: l.itens })));
-      if (report.espelho.unidadesCandidatas) {
-        console.log('Unidades candidatas: ' + report.espelho.unidadesCandidatas.total + ' em ' + report.espelho.unidadesCandidatas.caminho);
-        console.table(report.espelho.unidadesCandidatas.perfilDosCampos.map((p) => ({ campo: p.campo, tipos: p.tipos, preenchido: p.preenchido, exemplos: p.exemplos.join(' | ') })));
-        console.log('Amostra (3 itens, sanitizada):', report.espelho.unidadesCandidatas.amostra);
-        console.log('Sugestões de mapeamento (não confirmadas):', report.espelho.sugestoesDeMapeamento.campos);
+      console.log('Espelho:', { url: report.espelho.url, status: report.espelho.status, vinculo: report.espelho.vinculoComAlvo });
+      const n = report.espelho.normalizado;
+      if (n) {
+        console.log('Empreendimento:', n.empreendimento);
+        console.log('Resumo:', n.resumo);
+        console.log('Validação:', n.validacao);
+      }
+      if (pacote) {
+        console.table(pacote.unidades.map((u) => ({
+          bloco: u.bloco, unidade: u.unidade, andar: u.andar, tipologia: u.tipologia, area: u.areaPrivativa,
+          vagas: u.vagas, valorFinalKit: u.valorFinalKit, avaliacao: u.avaliacaoBancaria, status: u.status.texto
+        })));
       }
     }
     console.log('Relatório completo:', report);

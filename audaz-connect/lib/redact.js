@@ -15,6 +15,8 @@
       const v = value[k];
       if (cfg.sensitiveKeyPattern.test(k) && (v == null || typeof v !== 'object')) {
         out[k] = v == null || v === '' ? v : '[removido]';
+      } else if (typeof v === 'string' && /^https?:\/\//i.test(v)) {
+        out[k] = redactUrl(v);
       } else {
         out[k] = redactDeep(v, depth + 1);
       }
@@ -26,7 +28,7 @@
     try {
       const u = new URL(url);
       for (const k of [...u.searchParams.keys()]) {
-        if (cfg.sensitiveKeyPattern.test(k)) u.searchParams.set(k, '[removido]');
+        if (cfg.sensitiveKeyPattern.test(k) || cfg.sensitiveUrlParamPattern.test(k)) u.searchParams.set(k, '[removido]');
       }
       return u.href;
     } catch (_) { return String(url); }

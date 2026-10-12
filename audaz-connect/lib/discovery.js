@@ -95,6 +95,30 @@
     return parts.reduce((acc, p) => (acc == null ? acc : acc[p]), json);
   }
 
+  /** Registro do empreendimento (lista/obter-por-nome) com este idEmpreendimentoSales. */
+  function findEmpreendimentoRecord(jsonRecs, id) {
+    let found = null;
+    for (const rec of jsonRecs) {
+      walk(rec.json, (v) => {
+        if (found) return false;
+        if (v && typeof v === 'object' && !Array.isArray(v) && v.idEmpreendimentoSales === id && 'numeroDeUnidades' in v) found = v;
+      });
+      if (found) break;
+    }
+    return found;
+  }
+
+  /** ID do empreendimento a partir da URL do espelho (parâmetro observado: IdEmpreendimentoSales). */
+  function espelhoId(rec) {
+    try {
+      const u = new URL(rec.url);
+      for (const [k, v] of u.searchParams) if (/^idempreendimentosales$/i.test(k)) return v;
+    } catch (_) { /* ignora */ }
+    return null;
+  }
+
+  const isPortalApi = (url) => { try { return cfg.portalApiHostPattern.test(new URL(url).hostname); } catch (_) { return false; } };
+
   const isEspelho = (rec) => cfg.espelhoUrlPatterns.some((re) => re.test(rec.url || ''));
 
   /**
@@ -131,5 +155,5 @@
     return out;
   }
 
-  ns.discovery = { norm, walk, findText, idCandidates, findObjectArrays, itemsOfGroup, getAt, isEspelho, linkToTarget, findInDom };
+  ns.discovery = { norm, walk, findText, idCandidates, findObjectArrays, itemsOfGroup, getAt, isEspelho, isPortalApi, espelhoId, findEmpreendimentoRecord, linkToTarget, findInDom };
 })(self.AudazConnect);

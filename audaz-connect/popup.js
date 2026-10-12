@@ -51,7 +51,7 @@ function renderStatus(st) {
   $('pName').textContent = st.alvo;
   if (st.ultimoRelatorio) {
     $('stLast').textContent = fmtDate(st.ultimoRelatorio.geradoEm);
-    $('stUni').textContent = st.ultimoRelatorio.unidades == null ? '—' : st.ultimoRelatorio.unidades;
+    $('stUni').textContent = st.ultimoRelatorio.unidades == null ? '—' : st.ultimoRelatorio.unidades + ' · ' + st.ultimoRelatorio.disponiveis;
   }
   $('btnCancel').hidden = !st.aguardandoEspelho;
 }
@@ -67,6 +67,7 @@ function renderReport(report) {
   $('out').hidden = false;
   $('json').textContent = JSON.stringify(report, null, 2);
   $('btnRaw').disabled = !report.espelho || !!report.espelho.erro;
+  $('btnPkg').disabled = report.resultado !== 'capturado';
 }
 
 async function refresh() {
@@ -145,6 +146,14 @@ $('btnCopy').addEventListener('click', async () => {
 
 $('btnDl').addEventListener('click', () => {
   if (lastReport) download('audaz-connect-debug-' + stamp() + '.json', lastReport);
+});
+
+$('btnPkg').addEventListener('click', async () => {
+  const res = await send('AC_PACKAGE');
+  if (res && res.pacote) {
+    const slug = (res.pacote.empreendimento.nome || 'empreendimento').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    download('disponibilidade-' + slug + '-' + stamp() + '.json', res.pacote);
+  } else $('pMsg').textContent = 'Nenhuma captura válida em memória nesta aba.';
 });
 
 $('btnRaw').addEventListener('click', async () => {

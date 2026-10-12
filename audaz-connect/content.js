@@ -16,7 +16,8 @@
     records: [],      // respostas JSON mantidas em memória (inclui espelhos)
     session: { estado: 'indeterminado', detalhe: 'nenhuma resposta do portal observada ainda' },
     armed: false,     // captura DEBUG aguardando o espelho do alvo
-    lastReport: null
+    lastReport: null,
+    lastPackage: null // pacote normalizado (audaz.disponibilidade/v1) da última captura válida
   };
 
   const isPortalHost = (url) => { try { return /(^|\.)boravender\.app\.br$/i.test(new URL(url).hostname); } catch (_) { return false; } };
@@ -50,8 +51,10 @@
   function runReport() {
     const report = R.build(state);
     state.lastReport = report;
-    R.log(report);
-    try { chrome.storage.local.set({ 'ac:lastReport': report, 'ac:lastReportAt': Date.now() }); } catch (_) { /* ignora */ }
+    R.log(report, state.lastPackage);
+    const save = { 'ac:lastReport': report, 'ac:lastReportAt': Date.now() };
+    if (state.lastPackage) save['ac:lastPackage'] = state.lastPackage; // armazenamento local de desenvolvimento (Fase 3: API)
+    try { chrome.storage.local.set(save); } catch (_) { /* ignora */ }
     badge(report.resultado === 'capturado' ? '✓' : report.resultado === 'aguardando' ? '…' : '!');
     return report;
   }
@@ -92,7 +95,8 @@
       alvo: cfg.debugTarget.nome,
       ultimoRelatorio: state.lastReport
         ? { resultado: state.lastReport.resultado, motivo: state.lastReport.motivo, geradoEm: state.lastReport.geradoEm,
-            unidades: state.lastReport.espelho && state.lastReport.espelho.unidadesCandidatas ? state.lastReport.espelho.unidadesCandidatas.total : null }
+            unidades: state.lastPackage ? state.lastPackage.resumo.total : null,
+            disponiveis: state.lastPackage ? state.lastPackage.resumo.porStatus.disponivel || 0 : null }
         : null
     };
   }
@@ -135,6 +139,7 @@
       if (msg.type === 'AC_STATUS') sendResponse(status());
       else if (msg.type === 'AC_PULL_DEBUG') sendResponse({ ok: true, report: pullDebug(), status: status() });
       else if (msg.type === 'AC_CANCEL') { state.armed = false; sendResponse({ ok: true, status: status() }); }
+      else if (msg.type === 'AC_PACKAGE') sendResponse({ ok: true, pacote: state.lastPackage });
       else if (msg.type === 'AC_RAW_ESPELHO') sendResponse({ ok: true, raw: rawEspelho() });
     } catch (e) {
       console.error('[AUDAZ CONNECT]', e);

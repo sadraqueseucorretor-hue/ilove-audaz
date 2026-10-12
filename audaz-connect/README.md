@@ -15,7 +15,7 @@ config.js                       alvo, padrões de URL, chaves sensíveis, aliase
 lib/redact.js      SEGURANÇA    remove valores sensíveis (token, CPF, e-mail, cliente…)
 lib/schema.js      ESTRUTURA    tipos, perfil de campos, exemplos
 lib/discovery.js   DESCOBERTA   acha o alvo, o ID dele e o espelho correspondente
-lib/normalize.js   NORMALIZAÇÃO campos do Audaz + sugestões (mapeamento confirmado: PENDENTE)
+lib/normalize.js   NORMALIZAÇÃO espelho → formato audaz.disponibilidade/v1 (mapeamento confirmado)
 lib/report.js      RELATÓRIO    JSON de debug + console estruturado
 lib/page-ui.js     UI na página aviso discreto + destaque do empreendimento
 content.js         ORQUESTRADOR liga tudo e conversa com o popup
@@ -54,3 +54,26 @@ O nome `obter-espelho-de-vendas` pode não aparecer na URL. Nesse caso, no DevTo
 requisição que trouxe as unidades e me envie: a **URL** (aba Headers, sem copiar
 cabeçalhos de Authorization/Cookie), o **Payload** e um trecho da aba **Response**.
 O relatório também lista as últimas requisições observadas, o que ajuda a achá-la.
+
+## Formato confirmado (teste real de 12/10/2026)
+
+- Espelho: `GET be.direcional.com.br/bora-vender/v1/unidade/obter-espelho-de-vendas?IdEmpreendimentoSales=<id>`
+  → `{ blocos: [ { nome, andar: [ { valor, unidades: [...] } ] } ] }`
+- Lista de empreendimentos da regional: `GET .../v1/empreendimento/obter?unidadeDeNegocio=Direcional&regional=CE&somenteDisponiveis=false`
+
+| Audaz | Campo do portal |
+|---|---|
+| identificador | `identificador` (BL01-0102) |
+| bloco | `blocoEtapa` |
+| unidade | derivado do `identificador` (0102) |
+| andar | `andar` |
+| tipologia | `tipoPlanta` |
+| quartos | `numQuartos` |
+| areaPrivativa | `areaPrivativaPrincipal` |
+| vagas | `qtdeVagas` |
+| valorFinalKit | `valorFinalKit` |
+| avaliacaoBancaria | `valorAvalBancaria` |
+| status | `statusUnidade` → disponível / reservado / vendido / indisponível / outro |
+
+O botão **Baixar normalizado** gera o pacote `disponibilidade-<empreendimento>-*.json`
+(também salvo localmente em `chrome.storage.local`, chave `ac:lastPackage`).
